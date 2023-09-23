@@ -1,4 +1,13 @@
 .idea
 *.iml
 venv
-.env*
+#.env*
+*.pyc
+*/__pycache__/*
+
+# Docker Service Cache Volumes
+./two_lux/airflow_logs
+./docker_services/postgres/data
+./two_lux/.jupyter
+./docker_services/mariadb/data
+./docker_services/superset/superset_home

@@ -6,9 +6,10 @@ venv
 */__pycache__/*
 
 # Docker Service Cache Volumes
-two_lux/airflow_logs/
+docker_services/airflow/airflow_logs/
 docker_services/postgres/data/
-two_lux/.jupyter/
+two_lux/jupyter/.jupyter/
 docker_services/mariadb/data/
 docker_services/superset/superset_home/
-docker_services/minio/data/.minio.sys/
+docker_services/minio/data1/.minio.sys/
+docker_services/airflow/jars/*.jar

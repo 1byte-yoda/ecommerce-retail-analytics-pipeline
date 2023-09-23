@@ -2,6 +2,13 @@ from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
 from datetime import datetime, timedelta
+from pathlib import Path
+
+
+def get_jars() -> str:
+    path = Path("/sources/jars")
+    jar_list = [str(x) for x in list(path.glob("*.jar"))]
+    return ",".join(jar_list)
 
 ###############################################
 # Parameters
@@ -37,11 +44,12 @@ start = DummyOperator(task_id="start", dag=dag)
 
 spark_job = SparkSubmitOperator(
     task_id="spark_job",
-    application="/sources/spark_app/app.py", # Spark application path created in airflow and spark cluster
+    application="/sources/spark_app/sample_app.py", # Spark application path created in airflow and spark cluster
     name=spark_app_name,
     conn_id="spark",
     verbose=False,
-    packages="io.delta:delta-core_2.12:2.4.0,org.apache.hadoop:hadoop-aws:3.3.1,com.amazonaws:aws-java-sdk-bundle:1.12.392",
+    jars=get_jars(),
+    # packages="io.delta:delta-core_2.12:2.4.0,org.apache.hadoop:hadoop-aws:3.3.1,com.amazonaws:aws-java-sdk-bundle:1.12.392",
     # conf={"spark.master": spark_master},
     num_executors=2,
     executor_cores=1,
@@ -50,5 +58,12 @@ spark_job = SparkSubmitOperator(
     dag=dag)
 
 end = DummyOperator(task_id="end", dag=dag)
+
+# io.delta#delta-core_2.12;2.4.0 in central
+# io.delta#delta-storage;2.4.0 in central
+# org.antlr#antlr4-runtime;4.9.3 in central
+# org.apache.hadoop#hadoop-aws;3.3.1 in central
+# org.wildfly.openssl#wildfly-openssl;1.0.7.Final in central
+# com.amazonaws#aws-java-sdk-bundle;1.12.392 in central
 
 start >> spark_job >> end

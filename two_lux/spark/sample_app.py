@@ -17,11 +17,11 @@ builder = SparkSession.builder.appName("delta") \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
 
 spark = configure_spark_with_delta_pip(builder).enableHiveSupport().getOrCreate()
-# spark.catalog.setCurrentCatalog("spark_catalog")
-df = spark.read.csv("s3a://delta-lake/results.csv",header=True)
+delta_lake_container_path = "s3a://tmp"
+df = spark.read.csv(f"{delta_lake_container_path}/results.csv",header=True)
 df = df.withColumnRenamed('date','dt')
-myuuid = uuid.uuid4()
+
 table_name = "results_delta"
-path = (f"s3a://delta-lake/{table_name}").format(myuuid)
+path = f"{delta_lake_container_path}/{table_name}"
 print(path)
 df.write.format("delta").partitionBy("countryCountry").mode('overwrite').option("path", path).saveAsTable(f"delta_lake.{table_name}")

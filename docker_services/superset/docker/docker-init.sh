@@ -50,7 +50,15 @@ echo_step "1" "Starting" "Applying DB migrations"
 superset db upgrade
 echo_step "1" "Complete" "Applying DB migrations"
 
-superset set_database_uri -d trino -u trino://trino@trino:8080/hive
+# Setup Trino DB Connections
+echo_step "1.1" "Setting Up Database Connection for Trino (Hive)"
+superset set_database_uri -d trino.hive -u trino://trino@trino:8080/hive
+echo_step "1.1" "Complete Setting Up Database Connection for Trino (Hive)"
+
+echo_step "1.2" "Setting Up Database Connection for Trino (Delta)"
+superset set_database_uri -d trino.delta -u trino://trino@trino:8080/delta
+echo_step "1.2" "Complete Setting Up Database Connection for Trino (Delta)"
+
 # Create an admin user
 echo_step "2" "Starting" "Setting up admin user ( admin / $ADMIN_PASSWORD )"
 superset fab create-admin \
@@ -76,4 +84,6 @@ if [ "$SUPERSET_LOAD_EXAMPLES" = "yes" ]; then
         superset load_examples
     fi
     echo_step "4" "Complete" "Loading examples"
+else
+  echo_step "4" "Complete" "Skipping Pre-loaded Examples"
 fi

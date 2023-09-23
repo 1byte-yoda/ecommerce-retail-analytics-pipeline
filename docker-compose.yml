@@ -23,7 +23,7 @@ x-airflow-common:
     - ./two_lux/plugins:/opt/airflow/plugins
     - ./two_lux/airflow_logs:/opt/airflow/logs
     - ./two_lux/spark:/spark_app
-  user: "${AIRFLOW_UID:-50000}:0"
+  user: "${AIRFLOW_UID:-50115}:0"
   depends_on:
     &airflow-common-depends-on
     redis:
@@ -353,7 +353,7 @@ services:
       MINIO_ACCESS_KEY: datalake
       MINIO_SECRET_KEY: datalake
     volumes:
-      - ./docker_services/minio/data1:/data
+      - ./docker_services/minio/data:/data
 
   superset:
     env_file: ./docker_services/superset/docker/env-non-dev

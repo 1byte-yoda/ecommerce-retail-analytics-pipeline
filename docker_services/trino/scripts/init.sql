@@ -1,4 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS delta.delta_lake WITH (location = 's3a://delta-lake/');
+CREATE SCHEMA IF NOT EXISTS delta.bronze WITH (location = 's3a://bronze/');
+CREATE SCHEMA IF NOT EXISTS delta.silver WITH (location = 's3a://silver/');
+CREATE SCHEMA IF NOT EXISTS delta.gold WITH (location = 's3a://gold/');
 CREATE SCHEMA IF NOT EXISTS delta.tmp WITH (location = 's3a://tmp/');
 SHOW SCHEMAS IN delta;
 

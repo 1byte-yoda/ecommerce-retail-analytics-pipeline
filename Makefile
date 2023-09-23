@@ -10,12 +10,15 @@ airflow_init_uris:
 	docker-compose run -it airflow-cli connections add 'spark' --conn-host 'spark://spark' --conn-port '7077' --conn-type 'spark' || echo "Skipping..."
 
 minio_init_access_keys:
-	(docker exec -it minio mc alias set myminio http://localhost:9000 admin minioadmin && \
-	docker exec -it minio mc admin user svcacct add --access-key "datalake" --secret-key "datalake" myminio admin) \
+	(docker exec -it minio mc alias set myminio http://localhost:9000 admin minioadmin \
+	&& docker exec -it minio mc admin user svcacct add --access-key "datalake" --secret-key "datalake" myminio admin) \
 	|| echo "Skipping..."
 
 trino_init_schemas:
 	docker exec -t trino trino --file /etc/scripts/init.sql
+
+init_medal_buckets:
+	bash docker_services/minio/init.sh
 
 up:
 	docker-compose up -d
@@ -25,6 +28,7 @@ down:
 
 all:
 	make jars_dl
+	make init_medal_buckets
 	make up
 	echo "Sleeping for 10 seconds to ensure services are up before initializing Database objects"
 	sleep 10

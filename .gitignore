@@ -14,3 +14,4 @@ docker_services/superset/superset_home/
 docker_services/minio/data1/.minio.sys/
 docker_services/airflow/jars/*.jar
 docker_services/minio/data1/tmp
+.ipynb_checkpoints

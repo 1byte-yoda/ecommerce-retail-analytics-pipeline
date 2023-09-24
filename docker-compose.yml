@@ -296,6 +296,7 @@ services:
     volumes:
       - ./two_lux/jupyter/notebooks:/home/jovyan/notebooks/
       - ./two_lux/jupyter/.jupyter:/home/jovyan/.jupyter/
+      - ./docker_services/airflow/jars:/home/jovyan/jars
 
   trino:
     image: "trinodb/trino:419"

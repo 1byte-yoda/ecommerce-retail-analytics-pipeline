@@ -20,6 +20,9 @@ trino_init_schemas:
 init_medal_buckets:
 	bash docker_services/minio/init.sh
 
+configure_jupyter:
+	mkdir -p two_lux/jupyter/.jupyter/ && cp docker_services/jupyter/jupyter_notebook_config.py two_lux/jupyter/.jupyter/jupyter_notebook_config.py
+
 up:
 	docker-compose up -d
 
@@ -29,6 +32,7 @@ down:
 all:
 	make jars_dl
 	make init_medal_buckets
+	make configure_jupyter
 	make up
 	echo "Sleeping for 10 seconds to ensure services are up before initializing Database objects"
 	sleep 10

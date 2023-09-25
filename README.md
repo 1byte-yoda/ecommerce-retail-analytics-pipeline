@@ -3,6 +3,12 @@
 ## High Level Data Architecture
 ![archi](images/2lux_high_level_archi.gif)
 
+- Apache Spark - used for the data processing from bronze to gold layer
+- Apache Airflow - for data pipelining and workflow scheduling
+- Trino (Hive and Delta catalogs) - for data warehouse / data presentation
+- Apache Superset - for data visualization
+- Minio - for data lake
+
 ## Star Schema
 ![erd](images/2lux_erd.png)
 
@@ -75,6 +81,22 @@ This will download the images and Spark jars needed, and then initialize all cre
    ##### MySQL
     Username: admin
     Password: admin
+
+## Data Profiling
+- Check [data profiling notebook](https://github.com/1byte-yoda/two-lux/blob/master/two_lux/jupyter/notebooks/data_profiling.ipynb) for more info
+
+### Future Improvements
+- Deploy and translate the architecture into the cloud with a CI/CD configuration
+- Impose Data Governance and Security
+   - Data lineage - to easily track data movement and be able to reproduce a data issues in the downstream processes.
+   - Data Masking for PII data
+   - Role Based Access Control - ie. Data Analyst can have access to silver and gold layer while the Management team will only have access to the gold layer
+   - Row Level Security - for instance if each product belongs to different warehouses, each warehouse manager will only have access to all records related to their warehouse_id
+   - Column Level Security - like all fields related to financial budget of the company is only accessible by the finance and HR team.
+   - KeyVaults - Storing secrets into a safer place like Azure KeyVault.
+- Upgrade the data loading strategy to use Slowly Changing Dimension.
+  - Currently, each table in the data warehouse contains a surrogate key for SCD readiness.
+- Increase test coverage of the code.
 
 
 ## Official Documentation for each Container Used

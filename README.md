@@ -1,6 +1,10 @@
 # 2LUX - DATA ANALYTICS PLATFORM
 
-![2lux](image/front.png)
+## High Level Data Architecture
+![archi](images/2lux_high_level_archi.gif)
+
+## Star Schema
+![erd](images/2lux_erd.png)
 
 ## Software Requirements
 * [Docker Desktop Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows)

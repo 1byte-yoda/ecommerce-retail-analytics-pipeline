@@ -19,10 +19,10 @@ x-airflow-common:
   networks:
     - default_net
   volumes:
-    - ./two_lux/dags:/opt/airflow/dags
-    - ./two_lux/plugins:/opt/airflow/plugins
+    - ./src/dags:/opt/airflow/dags
+    - ./src/plugins:/opt/airflow/plugins
     - ./docker_services/airflow/airflow_logs:/opt/airflow/logs
-    - ./two_lux/spark:/sources/spark_app
+    - ./src/spark:/sources/spark_app
     - ./docker_services/airflow/jars:/sources/jars
   user: "${AIRFLOW_UID:-50115}:0"
   depends_on:
@@ -213,9 +213,9 @@ services:
       - postgres
       - spark-master
     volumes:
-      - ./two_lux/dags:/sources/dags
-      - ./two_lux/plugins:/sources/plugins
-      - ./two_lux/spark:/sources/spark_app
+      - ./src/dags:/sources/dags
+      - ./src/plugins:/sources/plugins
+      - ./src/spark:/sources/spark_app
       - ./docker_services/airflow/airflow_logs:/sources/logs
 
   airflow-cli:
@@ -246,7 +246,7 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
     volumes:
-      - ./two_lux/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
+      - ./src/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
     ports:
       - "8081:8080"
       - "7077:7077"
@@ -266,7 +266,7 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
     volumes:
-      - ./two_lux/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
+      - ./src/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
 
   spark-worker-2:
     image: bitnami/spark:3.4.1
@@ -283,7 +283,7 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
     volumes:
-      - ./two_lux/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
+      - ./src/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
 
   jupyter-pyspark:
     image: jupyter/pyspark-notebook:spark-3.4.1
@@ -294,8 +294,8 @@ services:
       - "8888:8888"
       - "4040:4040"
     volumes:
-      - ./two_lux/jupyter/notebooks:/home/jovyan/notebooks/
-      - ./two_lux/jupyter/.jupyter:/home/jovyan/.jupyter/
+      - ./src/jupyter/notebooks:/home/jovyan/notebooks/
+      - ./src/jupyter/.jupyter:/home/jovyan/.jupyter/
       - ./docker_services/airflow/jars:/home/jovyan/jars
 
   trino:

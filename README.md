@@ -1,7 +1,7 @@
-# 2LUX - DATA ANALYTICS PLATFORM
+# Ecommerce Retail - DATA ANALYTICS PLATFORM
 
 ## High Level Data Architecture
-![archi](images/2lux_high_level_archi.gif)
+![archi](images/high_level_archi.gif)
 
 - Apache Spark - used for the data processing from bronze to gold layer
 - Apache Airflow - for data pipelining and workflow scheduling
@@ -10,7 +10,7 @@
 - Minio - for data lake
 
 ## Star Schema
-![erd](images/2lux_erd.png)
+![erd](images/erd.png)
 
 ## Software Requirements
 * [Docker Desktop Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows)
@@ -26,14 +26,14 @@
 ### STARTING THE ENVIRONMENT
 
 #### In a terminal/DOS/PowerShell, clone the project to github.
-      git clone https://github.com/1byte-yoda/two-lux.git
+      git clone https://github.com/1byte-yoda/ecommerce-retail-analytics-pipeline.git
 
 
-#### When you clone the repository, the two-lux directory will be created on your local machine.
+#### When you clone the repository, the ecommerce-retail-analytics-pipeline directory will be created on your local machine.
 
 ## EXAMPLES OF HOW TO START THE ENVIRONMENT
 
-   *On Windows open PowerShell, on Linux/Mac a terminal and access the `two-lux` directory*
+   *On Windows open PowerShell, on Linux/Mac a terminal and access the `ecommerce-retail-analytics-pipeline` directory*
 
 ### To Spin-up all Containers
       make all
@@ -83,7 +83,7 @@ This will download the images and Spark jars needed, and then initialize all cre
     Password: admin
 
 ## Data Profiling
-- Check [data profiling notebook](https://github.com/1byte-yoda/two-lux/blob/master/two_lux/jupyter/notebooks/data_profiling.ipynb) for more info
+- Check [data profiling notebook](https://github.com/1byte-yoda/ecommerce-retail-analytics-pipeline/blob/master/src/jupyter/notebooks/data_profiling.ipynb) for more info
 
 ### Future Improvements
 - Deploy and translate the architecture into the cloud with a CI/CD configuration

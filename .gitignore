@@ -4,11 +4,12 @@ venv
 #.env*
 *.pyc
 */__pycache__/*
+.DS_Store
 
 # Docker Service Cache Volumes
 docker_services/airflow/airflow_logs/
 docker_services/postgres/data/
-two_lux/jupyter/.jupyter/
+src/jupyter/.jupyter/
 docker_services/mariadb/data/
 docker_services/superset/superset_home/
 docker_services/minio/data1/.minio.sys/

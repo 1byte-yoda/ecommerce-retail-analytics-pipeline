@@ -9,7 +9,10 @@
 - Apache Superset - for data visualization
 - Minio - for data lake
 
-## Star Schema
+## Olist Transactional Data Model
+![olist_erd.png](images/olist_erd.png)
+
+## Data Modeling (Star Schema)
 ![erd](images/erd.png)
 
 ## Software Requirements

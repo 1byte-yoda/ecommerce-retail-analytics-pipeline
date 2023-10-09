@@ -18,3 +18,5 @@ docker_services/minio/data1/tmp
 docker_services/minio/data1/silver
 docker_services/minio/data1/gold
 .ipynb_checkpoints
+
+two_lux/jupyter/.jupyter/

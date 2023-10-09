@@ -21,7 +21,7 @@ init_medal_buckets:
 	bash docker_services/minio/init.sh
 
 configure_jupyter:
-	mkdir -p two_lux/jupyter/.jupyter/ && cp docker_services/jupyter/jupyter_notebook_config.py two_lux/jupyter/.jupyter/jupyter_notebook_config.py
+	mkdir -p src/jupyter/.jupyter/ && cp docker_services/jupyter/jupyter_notebook_config.py src/jupyter/.jupyter/jupyter_notebook_config.py
 
 up:
 	docker-compose up -d

@@ -286,7 +286,8 @@ services:
       - ./src/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
 
   jupyter-pyspark:
-    image: jupyter/pyspark-notebook:spark-3.4.1
+    build:
+      context: ./docker_services/jupyter
     container_name: jupyter-pyspark
     networks:
       - default_net

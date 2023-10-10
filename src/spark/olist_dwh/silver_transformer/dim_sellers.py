@@ -15,7 +15,7 @@ def get_sellers_schema() -> StructType:
 
 
 def create_dim_sellers(sellers_df: DataFrame, geolocations_df: DataFrame) -> DataFrame:
-    return sellers_df.join(geolocations_df, on=F.col("sellers_zip_code_prefix") == F.col("geolocation_zip_code_prefix"), how="inner") \
+    return sellers_df.join(geolocations_df, on=F.col("sellers_zip_code_prefix") == F.col("geolocation_zip_code_prefix"), how="left") \
         .selectExpr(
             "seller_id",
             "seller_id_zip_code_prefix",

@@ -13,7 +13,7 @@
 ![olist_erd.png](images/olist_erd.png)
 
 ## Data Modeling (Star Schema)
-![erd](images/erd.png)
+![erd](images/olist_star_erd.png)
 
 ## Software Requirements
 * [Docker Desktop Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows)

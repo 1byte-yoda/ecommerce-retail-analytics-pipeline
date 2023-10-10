@@ -9,14 +9,12 @@ venv
 # Docker Service Cache Volumes
 docker_services/airflow/airflow_logs/
 docker_services/postgres/data/
-src/jupyter/.jupyter/
 docker_services/mariadb/data/
 docker_services/superset/superset_home/
 docker_services/minio/data1/.minio.sys/
 docker_services/airflow/jars/*.jar
-docker_services/minio/data1/tmp
-docker_services/minio/data1/silver
-docker_services/minio/data1/gold
+docker_services/minio/data1/
 .ipynb_checkpoints
 
-two_lux/jupyter/.jupyter/
+src/scraper/
+src/jupyter/.jupyter/

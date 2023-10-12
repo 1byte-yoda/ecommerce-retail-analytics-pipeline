@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append("/sources/spark_app/")  # noqa
+sys.path.append("/sources/spark_app/olist_dwh/silver_transformer")  # noqa
 sys.path.append("../../../src/spark/olist_dwh/silver_transformer")  # noqa
 
 from pyspark.sql import DataFrame, SparkSession

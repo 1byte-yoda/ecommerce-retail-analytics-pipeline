@@ -6,9 +6,11 @@ from src.spark.olist_dwh.silver_transformer.dim_sellers import create_dim_seller
 from src.spark.olist_dwh.silver_transformer.dim_customers import create_dim_customers_df
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def spark_fixture():
-    return SparkSession.builder.appName("Test Olist DWH").master("local[*]").getOrCreate()
+    spark = SparkSession.builder.appName("Test Olist DWH").master("local[*]").getOrCreate()
+    yield spark
+    spark.stop()
 
 
 def test_dim_customers_creation(spark_fixture: SparkSession):

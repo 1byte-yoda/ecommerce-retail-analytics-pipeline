@@ -10,6 +10,7 @@ from src.spark.olist_dwh.silver_transformer.dim_order_status import create_dim_o
 from src.spark.olist_dwh.silver_transformer.dim_product_category import create_dim_products_df
 from src.spark.olist_dwh.silver_transformer.dim_date import create_dim_date_df
 from src.spark.olist_dwh.silver_transformer.fact_orders import create_fact_orders_df
+from src.spark.olist_dwh.silver_transformer.fact_payments import create_fact_payments_df
 
 
 @pytest.fixture(scope="module")
@@ -432,3 +433,109 @@ def test_fact_orders_creation(spark_fixture: SparkSession):
 
     assert fact_orders_df.count() == 6
     assert fact_orders_df.collect() == expected_fact_orders
+
+
+def test_fact_payments_creation(spark_fixture: SparkSession):
+    payments_data = [
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "payment_sequential": 1,
+            "payment_type": "credit_card",
+            "payment_installments": 5,
+            "payment_value": 547.29
+        },
+        {
+            "order_id": "136cce7faa42fdb2cefd53fdc79a6098",
+            "payment_sequential": 1,
+            "payment_type": "credit_card",
+            "payment_installments": 1,
+            "payment_value": 65.95
+        },
+        {
+            "order_id": "ac3b0c224349e4ca9a0b0f2e8fbc4c75",
+            "payment_sequential": 1,
+            "payment_type": "credit_card",
+            "payment_installments": 1,
+            "payment_value": 2.29
+        },
+        {
+            "order_id": "ac3b0c224349e4ca9a0b0f2e8fbc4c75",
+            "payment_sequential": 2,
+            "payment_type": "voucher",
+            "payment_installments": 1,
+            "payment_value": 20.00
+        },
+        {
+            "order_id": "ac3b0c224349e4ca9a0b0f2e8fbc4c75",
+            "payment_sequential": 3,
+            "payment_type": "voucher",
+            "payment_installments": 1,
+            "payment_value": 20.00
+        }
+    ]
+    orders_data = [
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "customer_id": "0aad2e31b3c119c26acb8a47768cd00a",
+            "order_status": "delivered",
+            "order_purchase_timestamp": "2017-11-17 19:46:08",
+            "order_approved_at": "2017-11-17 21:31:03",
+            "order_delivered_carrier_date": "2017-11-21 12:57:04",
+            "order_delivered_customer_date": "2017-11-29 20:13:45",
+            "order_estimated_delivery_date": "2017-12-20 00:00:00"
+        },
+        {
+            "order_id": "136cce7faa42fdb2cefd53fdc79a6098",
+            "customer_id": "ed0271e0b7da060a393796590e7b737a",
+            "order_status": "invoiced",
+            "order_purchase_timestamp": "2017-04-11 12:22:08",
+            "order_approved_at": "2017-04-13 13:25:17",
+            "order_delivered_carrier_date": "2017-05-08 00:00:00",
+            "order_delivered_customer_date": "2017-05-09 00:00:00",
+            "order_estimated_delivery_date": "2017-05-09 00:00:00"
+        },
+        {
+            "order_id": "ac3b0c224349e4ca9a0b0f2e8fbc4c75",
+            "customer_id": "f444bb4bffe058f24c3b5b5a0c0f46b6",
+            "order_status": "delivered",
+            "order_purchase_timestamp": "2018-05-16 04:47:08",
+            "order_approved_at": "2018-05-16 04:55:11",
+            "order_delivered_carrier_date": "2018-05-16 14:15:00",
+            "order_delivered_customer_date": "2018-05-17 15:06:54",
+            "order_estimated_delivery_date": "2018-05-28 00:00:00"
+        }
+    ]
+    order_status_data = [
+        {
+            "order_status_id": 1,
+            "order_status": "shipped",
+        },
+        {
+            "order_status_id": 2,
+            "order_status": "invoiced",
+        },
+        {
+            "order_status_id": 3,
+            "order_status": "delivered",
+        }
+    ]
+    payments_df = spark_fixture.createDataFrame(data=payments_data)
+    orders_df = spark_fixture.createDataFrame(data=orders_data)
+    dim_order_status_df = spark_fixture.createDataFrame(data=order_status_data)
+    dim_date_df = create_dim_date_df(
+        spark=spark_fixture,
+        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
+        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
+    )
+    fact_payments_df = create_fact_payments_df(
+        spark=spark_fixture, payments_df=payments_df, orders_df=orders_df, dim_date_df=dim_date_df, dim_order_status_df=dim_order_status_df
+    )
+    expected_fact_payments = [
+        Row(order_id='136cce7faa42fdb2cefd53fdc79a6098', customer_id='ed0271e0b7da060a393796590e7b737a', order_status_id=2, order_purchase_timestamp_id=0, order_approved_at_id=176589, order_delivered_carrier_date_id=2288272, order_delivered_customer_date_id=2374672, order_estimated_delivery_date_id=2374672, payment_sequential=1, payment_type='credit_card', payment_installments=1, payment_value=65.95),  # noqa
+        Row(order_id='8c2b13adf3f377c8f2b06b04321b0925', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, payment_sequential=1, payment_type='credit_card', payment_installments=5, payment_value=547.29),  # noqa
+        Row(order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, order_purchase_timestamp_id=85902019726, order_approved_at_id=85902020209, order_delivered_carrier_date_id=85902053798, order_delivered_customer_date_id=85902143312, order_estimated_delivery_date_id=94489788001, payment_sequential=1, payment_type='credit_card', payment_installments=1, payment_value=2.29),  # noqa
+        Row(order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, order_purchase_timestamp_id=85902019726, order_approved_at_id=85902020209, order_delivered_carrier_date_id=85902053798, order_delivered_customer_date_id=85902143312, order_estimated_delivery_date_id=94489788001, payment_sequential=2, payment_type='voucher', payment_installments=1, payment_value=20.0),  # noqa
+        Row(order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, order_purchase_timestamp_id=85902019726, order_approved_at_id=85902020209, order_delivered_carrier_date_id=85902053798, order_delivered_customer_date_id=85902143312, order_estimated_delivery_date_id=94489788001, payment_sequential=3, payment_type='voucher', payment_installments=1, payment_value=20.0)  # noqa
+    ]
+
+    assert fact_payments_df.collect() == expected_fact_payments

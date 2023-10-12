@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from pyspark import Row
 from pyspark.sql import SparkSession
@@ -6,6 +8,7 @@ from src.spark.olist_dwh.silver_transformer.dim_sellers import create_dim_seller
 from src.spark.olist_dwh.silver_transformer.dim_customers import create_dim_customers_df
 from src.spark.olist_dwh.silver_transformer.dim_order_status import create_dim_order_status_df
 from src.spark.olist_dwh.silver_transformer.dim_product_category import create_dim_products_df
+from src.spark.olist_dwh.silver_transformer.dim_date import create_dim_date_df
 
 
 @pytest.fixture(scope="module")
@@ -213,3 +216,85 @@ def test_dim_order_status_creation(spark_fixture: SparkSession):
 
     assert dim_order_status.count() == 3
     assert dim_order_status.collect() == expected_order_status
+
+
+def test_dim_product_category(spark_fixture: SparkSession):
+    products_data = [
+        {
+            "product_id": "1e9e8ef04dbcff4541ed26657ea517e5",
+            "product_category_name": "perfumaria",
+            "product_name_lenght": 40,
+            "product_description_lenght": 287,
+            "product_photos_qty": 1,
+            "product_weight_g": 225,
+            "product_length_cm": 16,
+            "product_height_cm": 10,
+            "product_widht_cm": 14
+        },
+        {
+            "product_id": "3fcd8dfe610c62edfb51de2630cd9ef4",
+            "product_category_name": "bebes",
+            "product_name_lenght": 50,
+            "product_description_lenght": 509,
+            "product_photos_qty": 4,
+            "product_weight_g": 5700,
+            "product_length_cm": 41,
+            "product_height_cm": 17,
+            "product_widht_cm": 49
+        },
+        {
+            "product_id": "22937a73f92a33040ab4e2540355a5d8",
+            "product_category_name": "fashion_bolsas_e_acessorios",
+            "product_name_lenght": 50,
+            "product_description_lenght": 554,
+            "product_photos_qty": 3,
+            "product_weight_g": 100,
+            "product_length_cm": 16,
+            "product_height_cm": 5,
+            "product_widht_cm": 11
+        },
+    ]
+    product_category_name_translation = [
+        {
+            "product_category_name": "perfumaria",
+            "product_category_name_english": "perfumery",
+        },
+        {
+            "product_category_name": "bebes",
+            "product_category_name_english": "baby",
+        },
+        {
+            "product_category_name": "fashion_bolsas_e_acessorios",
+            "product_category_name_english": "fashion_bags_accessories",
+        },
+    ]
+    products_df = spark_fixture.createDataFrame(data=products_data)
+    products_translation_df = spark_fixture.createDataFrame(data=product_category_name_translation)
+    dim_products_df = create_dim_products_df(products_df=products_df, product_category_name_translation_df=products_translation_df)
+    expected_dim_products = [
+        Row(product_id="1e9e8ef04dbcff4541ed26657ea517e5", product_category_name="perfumaria", product_category_name_english="perfumery"),
+        Row(product_id="3fcd8dfe610c62edfb51de2630cd9ef4", product_category_name="bebes", product_category_name_english="baby"),
+        Row(product_id="22937a73f92a33040ab4e2540355a5d8", product_category_name="fashion_bolsas_e_acessorios", product_category_name_english="fashion_bags_accessories"),  # noqa
+    ]
+
+    assert dim_products_df.count() == 3
+    assert dim_products_df.collect() == expected_dim_products
+
+
+def test_dim_date_creation(spark_fixture: SparkSession):
+    dim_date_df = create_dim_date_df(
+        spark=spark_fixture,
+        min_dates=[datetime(2023, 10, 12, 17, 51, 0), datetime(2023, 10, 12, 17, 51, 30), datetime(2023, 10, 17, 17, 51, 0)],
+        max_dates=[datetime(2023, 10, 12, 17, 51, 5), datetime(2023, 10, 12, 17, 1, 9), datetime(2023, 10, 12, 17, 2, 35)]
+    )
+    expected_dim_date = [
+        Row(date_id=1, unix_timestamp=1697104260, timestamp=datetime(2023, 10, 12, 17, 51), year='2023', quarter='4', quarter_name='04', month='10', month_name='Oct', year_month='202310', year_week='202341', week_day_name='Thu', week_day_type='weekday', timezone='PST', time_of_day='Afternoon'),  # noqa
+        Row(date_id=2, unix_timestamp=1697104261, timestamp=datetime(2023, 10, 12, 17, 51, 1), year='2023', quarter='4', quarter_name='04', month='10', month_name='Oct', year_month='202310', year_week='202341', week_day_name='Thu', week_day_type='weekday', timezone='PST', time_of_day='Afternoon'),  # noqa
+        Row(date_id=3, unix_timestamp=1697104262, timestamp=datetime(2023, 10, 12, 17, 51, 2), year='2023', quarter='4', quarter_name='04', month='10', month_name='Oct', year_month='202310', year_week='202341', week_day_name='Thu', week_day_type='weekday', timezone='PST', time_of_day='Afternoon'),  # noqa
+        Row(date_id=4, unix_timestamp=1697104263, timestamp=datetime(2023, 10, 12, 17, 51, 3), year='2023', quarter='4', quarter_name='04', month='10', month_name='Oct', year_month='202310', year_week='202341', week_day_name='Thu', week_day_type='weekday', timezone='PST', time_of_day='Afternoon'),  # noqa
+        Row(date_id=5, unix_timestamp=1697104264, timestamp=datetime(2023, 10, 12, 17, 51, 4), year='2023', quarter='4', quarter_name='04', month='10', month_name='Oct', year_month='202310', year_week='202341', week_day_name='Thu', week_day_type='weekday', timezone='PST', time_of_day='Afternoon'),  # noqa
+        Row(date_id=6, unix_timestamp=1697104265, timestamp=datetime(2023, 10, 12, 17, 51, 5), year='2023', quarter='4', quarter_name='04', month='10', month_name='Oct', year_month='202310', year_week='202341', week_day_name='Thu', week_day_type='weekday', timezone='PST', time_of_day='Afternoon')  # noqa
+    ]
+    assert dim_date_df.count() == 6
+    assert dim_date_df.collect() == expected_dim_date
+   

@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
-from typing import List, Tuple
+from datetime import datetime
+from typing import List
 
-from pyspark.sql import DataFrame, SparkSession, Window
+from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.types import StructType, StructField, TimestampType, IntegerType, StringType, DoubleType
 
@@ -12,7 +12,7 @@ def generate_series(spark: SparkSession, start: str, stop: str, interval: int):
     ).first()
 
     return spark.range(start, stop + 1, interval).select(
-        F.row_number().over(Window.orderBy("id")).alias("date_id"),
+        F.monotonically_increasing_id().alias("date_id"),
         F.unix_timestamp(F.col("id").cast("timestamp")).alias("unix_timestamp"),
         F.col("id").cast("timestamp").alias("timestamp")
     )

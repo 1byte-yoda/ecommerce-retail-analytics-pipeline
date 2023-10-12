@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 from pyspark import Row
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
 
 from src.spark.olist_dwh.silver_transformer.dim_sellers import create_dim_sellers_df
 from src.spark.olist_dwh.silver_transformer.dim_customers import create_dim_customers_df
@@ -20,6 +20,15 @@ def spark_fixture():
     spark.sparkContext.setLogLevel("ERROR")
     yield spark
     spark.stop()
+
+
+@pytest.fixture(scope="module")
+def dim_date_df_fixture(spark_fixture: SparkSession):
+    yield create_dim_date_df(
+        spark=spark_fixture,
+        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
+        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
+    )
 
 
 def test_dim_customers_creation(spark_fixture: SparkSession):
@@ -302,7 +311,7 @@ def test_dim_date_creation(spark_fixture: SparkSession):
     assert dim_date_df.collect() == expected_dim_date
 
 
-def test_fact_orders_creation(spark_fixture: SparkSession):
+def test_fact_orders_creation(spark_fixture: SparkSession, dim_date_df_fixture: DataFrame):
     orders_data = [
         {
             "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
@@ -409,18 +418,13 @@ def test_fact_orders_creation(spark_fixture: SparkSession):
     orders_df = spark_fixture.createDataFrame(data=orders_data)
     order_items_df = spark_fixture.createDataFrame(data=order_items_data)
     dim_order_status_df = spark_fixture.createDataFrame(data=order_status_data)
-    dim_date_df = create_dim_date_df(
-        spark=spark_fixture,
-        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
-        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
-    )
 
     fact_orders_df = create_fact_orders_df(
         spark=spark_fixture,
         orders_df=orders_df,
         order_items_df=order_items_df,
         dim_order_status_df=dim_order_status_df,
-        dim_date_df=dim_date_df
+        dim_date_df=dim_date_df_fixture
     )
 
     expected_fact_orders = [
@@ -436,7 +440,7 @@ def test_fact_orders_creation(spark_fixture: SparkSession):
     assert fact_orders_df.collect() == expected_fact_orders
 
 
-def test_fact_payments_creation(spark_fixture: SparkSession):
+def test_fact_payments_creation(spark_fixture: SparkSession, dim_date_df_fixture: DataFrame):
     payments_data = [
         {
             "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
@@ -523,13 +527,8 @@ def test_fact_payments_creation(spark_fixture: SparkSession):
     payments_df = spark_fixture.createDataFrame(data=payments_data)
     orders_df = spark_fixture.createDataFrame(data=orders_data)
     dim_order_status_df = spark_fixture.createDataFrame(data=order_status_data)
-    dim_date_df = create_dim_date_df(
-        spark=spark_fixture,
-        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
-        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
-    )
     fact_payments_df = create_fact_payments_df(
-        spark=spark_fixture, payments_df=payments_df, orders_df=orders_df, dim_date_df=dim_date_df, dim_order_status_df=dim_order_status_df
+        spark=spark_fixture, payments_df=payments_df, orders_df=orders_df, dim_date_df=dim_date_df_fixture, dim_order_status_df=dim_order_status_df
     )
     expected_fact_payments = [
         Row(order_id="136cce7faa42fdb2cefd53fdc79a6098", customer_id="ed0271e0b7da060a393796590e7b737a", order_status_id=2, order_purchase_timestamp_id=0, order_approved_at_id=176589, order_delivered_carrier_date_id=2288272, order_delivered_customer_date_id=2374672, order_estimated_delivery_date_id=2374672, payment_sequential=1, payment_type="credit_card", payment_installments=1, payment_value=65.95),  # noqa
@@ -542,7 +541,7 @@ def test_fact_payments_creation(spark_fixture: SparkSession):
     assert fact_payments_df.collect() == expected_fact_payments
 
 
-def test_fact_reviews_creation(spark_fixture: SparkSession):
+def test_fact_reviews_creation(spark_fixture: SparkSession, dim_date_df_fixture: DataFrame):
     reviews_data = [
         {
             "review_id": "7c92e0cf5216a579027044df83dccb6f",
@@ -572,11 +571,6 @@ def test_fact_reviews_creation(spark_fixture: SparkSession):
             "review_answer_timestamp": "2018-05-20 19:42:14"
         }
     ]
-    dim_date_df = create_dim_date_df(
-        spark=spark_fixture,
-        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
-        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
-    )
     orders_data = [
         {
             "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
@@ -627,7 +621,7 @@ def test_fact_reviews_creation(spark_fixture: SparkSession):
     orders_df = spark_fixture.createDataFrame(data=orders_data)
     dim_order_status_df = spark_fixture.createDataFrame(data=order_status_data)
     fact_reviews_df = create_fact_reviews_df(
-        reviews_df=reviews_df, dim_date_df=dim_date_df, orders_df=orders_df, dim_order_status_df=dim_order_status_df
+        reviews_df=reviews_df, dim_date_df=dim_date_df_fixture, orders_df=orders_df, dim_order_status_df=dim_order_status_df
     )
     expected_fact_reviews = [
         Row(review_id="148168e0fafc52f1f67e8e9abccacf49", order_id="ac3b0c224349e4ca9a0b0f2e8fbc4c75", customer_id="f444bb4bffe058f24c3b5b5a0c0f46b6", order_status_id=3, review_creation_date_id=85902175298, review_answer_timestamp_id=85902419032, review_score=4, review_comment_title="", review_comment_message=""),

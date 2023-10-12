@@ -9,6 +9,7 @@ from src.spark.olist_dwh.silver_transformer.dim_customers import create_dim_cust
 from src.spark.olist_dwh.silver_transformer.dim_order_status import create_dim_order_status_df
 from src.spark.olist_dwh.silver_transformer.dim_product_category import create_dim_products_df
 from src.spark.olist_dwh.silver_transformer.dim_date import create_dim_date_df
+from src.spark.olist_dwh.silver_transformer.fact_orders import create_fact_orders_df
 
 
 @pytest.fixture(scope="module")
@@ -297,3 +298,137 @@ def test_dim_date_creation(spark_fixture: SparkSession):
     ]
     assert dim_date_df.count() == 6
     assert dim_date_df.collect() == expected_dim_date
+
+
+def test_fact_orders_creation(spark_fixture: SparkSession):
+    orders_data = [
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "customer_id": "0aad2e31b3c119c26acb8a47768cd00a",
+            "order_status": "delivered",
+            "order_purchase_timestamp": "2017-11-17 19:46:08",
+            "order_approved_at": "2017-11-17 21:31:03",
+            "order_delivered_carrier_date": "2017-11-21 12:57:04",
+            "order_delivered_customer_date": "2017-11-29 20:13:45",
+            "order_estimated_delivery_date": "2017-12-20 00:00:00"
+        },
+        {
+            "order_id": "136cce7faa42fdb2cefd53fdc79a6098",
+            "customer_id": "ed0271e0b7da060a393796590e7b737a",
+            "order_status": "invoiced",
+            "order_purchase_timestamp": "2017-04-11 12:22:08",
+            "order_approved_at": "2017-04-13 13:25:17",
+            "order_delivered_carrier_date": "2017-05-08 00:00:00",
+            "order_delivered_customer_date": "2017-05-09 00:00:00",
+            "order_estimated_delivery_date": "2017-05-09 00:00:00"
+        },
+        {
+            "order_id": "ee64d42b8cf066f35eac1cf57de1aa85",
+            "customer_id": "caded193e8e47b8362864762a83db3c5",
+            "order_status": "shipped",
+            "order_purchase_timestamp": "2018-06-04 16:44:48",
+            "order_approved_at": "2018-06-05 04:31:18",
+            "order_delivered_carrier_date": "2018-06-05 14:32:00",
+            "order_delivered_customer_date": "2018-06-05 14:32:00",
+            "order_estimated_delivery_date": "2018-06-28 00:00:00"
+        }
+    ]
+    order_items_data = [
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "order_item_id": 1,
+            "product_id": "6f59fe49d85eb1353b826d6b5a55e753",
+            "seller_id": "977f9f63dd360c2a32ece2f93ad6d306",
+            "shipping_limit_date": "2017-11-23 20:31:40",
+            "price": 90.90,
+            "freight_value": 21.08
+        },
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "order_item_id": 2,
+            "product_id": "5c818ca21204caf8ce1599617751ff49",
+            "seller_id": "54965bbe3e4f07ae045b90b0b8541f52",
+            "shipping_limit_date": "2017-11-23 20:31:40",
+            "price": 160.00,
+            "freight_value": 21.08
+        },
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "order_item_id": 3,
+            "product_id": "b75ad41bddb7dc94c7e555d9f78f5e8a",
+            "seller_id": "1dfe5347016252a7884b694d4f10f5c4",
+            "shipping_limit_date": "2017-11-23 20:31:40",
+            "price": 61.00,
+            "freight_value": 21.08
+        },
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "order_item_id": 4,
+            "product_id": "601a360bd2a916ecef0e88de72a6531a",
+            "seller_id": "7a67c85e85bb2ce8582c35f2203ad736",
+            "shipping_limit_date": "2017-11-23 20:31:40",
+            "price": 129.99,
+            "freight_value": 42.16
+        },
+        {
+            "order_id": "136cce7faa42fdb2cefd53fdc79a6098",
+            "order_item_id": 1,
+            "product_id": "a1804276d9941ac0733cfd409f5206eb",
+            "seller_id": "dc8798cbf453b7e0f98745e396cc5616",
+            "shipping_limit_date": "2017-04-19 13:25:17",
+            "price": 49.90,
+            "freight_value": 16.05
+        },
+        {
+            "order_id": "ee64d42b8cf066f35eac1cf57de1aa85",
+            "order_item_id": 1,
+            "product_id": "c50ca07e9e4db9ea5011f06802c0aea0",
+            "seller_id": "e9779976487b77c6d4ac45f75ec7afe9",
+            "shipping_limit_date": "2018-06-13 04:30:33",
+            "price": 14.49,
+            "freight_value": 7.87
+        }
+    ]
+    order_status_data = [
+        {
+            "order_status_id": 1,
+            "order_status": "shipped",
+        },
+        {
+            "order_status_id": 2,
+            "order_status": "invoiced",
+        },
+        {
+            "order_status_id": 3,
+            "order_status": "delivered",
+        }
+    ]
+
+    orders_df = spark_fixture.createDataFrame(data=orders_data)
+    order_items_df = spark_fixture.createDataFrame(data=order_items_data)
+    dim_order_status_df = spark_fixture.createDataFrame(data=order_status_data)
+    dim_date_df = create_dim_date_df(
+        spark=spark_fixture,
+        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
+        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
+    )
+
+    fact_orders_df = create_fact_orders_df(
+        spark=spark_fixture,
+        orders_df=orders_df,
+        order_items_df=order_items_df,
+        dim_order_status_df=dim_order_status_df,
+        dim_date_df=dim_date_df
+    )
+
+    expected_fact_orders = [
+        Row(order_id="136cce7faa42fdb2cefd53fdc79a6098", order_item_id=1, product_id="a1804276d9941ac0733cfd409f5206eb", seller_id="dc8798cbf453b7e0f98745e396cc5616", customer_id="ed0271e0b7da060a393796590e7b737a", order_status_id=2, shipping_limit_date_id=694989, order_purchase_timestamp_id=0, order_approved_at_id=176589, order_delivered_carrier_date_id=2288272, order_delivered_customer_date_id=2374672, order_estimated_delivery_date_id=2374672, price=49.9, freight_value=16.05),  # noqa
+        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=4, product_id="601a360bd2a916ecef0e88de72a6531a", seller_id="7a67c85e85bb2ce8582c35f2203ad736", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=129.99, freight_value=42.16),  # noqa
+        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=3, product_id="b75ad41bddb7dc94c7e555d9f78f5e8a", seller_id="1dfe5347016252a7884b694d4f10f5c4", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=61.0, freight_value=21.08),  # noqa
+        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=2, product_id="5c818ca21204caf8ce1599617751ff49", seller_id="54965bbe3e4f07ae045b90b0b8541f52", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=160.0, freight_value=21.08),  # noqa
+        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=1, product_id="6f59fe49d85eb1353b826d6b5a55e753", seller_id="977f9f63dd360c2a32ece2f93ad6d306", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=90.9, freight_value=21.08),  # noqa
+        Row(order_id="ee64d42b8cf066f35eac1cf57de1aa85", order_item_id=1, product_id="c50ca07e9e4db9ea5011f06802c0aea0", seller_id="e9779976487b77c6d4ac45f75ec7afe9", customer_id="caded193e8e47b8362864762a83db3c5", order_status_id=1, shipping_limit_date_id=94491186634, order_purchase_timestamp_id=94490453089, order_approved_at_id=94490495479, order_delivered_carrier_date_id=94490531521, order_delivered_customer_date_id=94490531521, order_estimated_delivery_date_id=94492466401, price=14.49, freight_value=7.87)  # noqa
+    ]
+
+    assert fact_orders_df.count() == 6
+    assert fact_orders_df.collect() == expected_fact_orders

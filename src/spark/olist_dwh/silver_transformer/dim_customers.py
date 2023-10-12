@@ -23,6 +23,6 @@ def create_dim_customers_df(customers_df: DataFrame, geolocations_df: DataFrame)
         "customer_zip_code_prefix",
         "customer_city",
         "customer_state",
-        "FIRST(geolocation_lat) OVER(PARTITION BY customer_zip_code_prefix) AS seller_location_latitude",
-        "FIRST(geolocation_lng) OVER(PARTITION BY customer_zip_code_prefix) AS seller_location_longitude"
+        "FIRST(geolocation_lat) OVER(PARTITION BY customer_zip_code_prefix) AS customer_location_latitude",
+        "FIRST(geolocation_lng) OVER(PARTITION BY customer_zip_code_prefix) AS customer_location_longitude"
     ).distinct()

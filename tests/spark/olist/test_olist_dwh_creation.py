@@ -4,11 +4,14 @@ from pyspark.sql import SparkSession
 
 from src.spark.olist_dwh.silver_transformer.dim_sellers import create_dim_sellers_df
 from src.spark.olist_dwh.silver_transformer.dim_customers import create_dim_customers_df
+from src.spark.olist_dwh.silver_transformer.dim_order_status import create_dim_order_status_df
+from src.spark.olist_dwh.silver_transformer.dim_product_category import create_dim_products_df
 
 
 @pytest.fixture(scope="module")
 def spark_fixture():
     spark = SparkSession.builder.appName("Test Olist DWH").master("local[*]").getOrCreate()
+    spark.sparkContext.setLogLevel("ERROR")
     yield spark
     spark.stop()
 
@@ -165,3 +168,48 @@ def test_dim_sellers_creation(spark_fixture: SparkSession):
     assert dim_seller_df.count() == 3
     assert dim_seller_df.where("seller_location_latitude IS NOT NULL AND seller_location_longitude IS NOT NULL").count() == 2
     assert dim_seller_df.collect() == expected_dim_customers
+
+
+def test_dim_order_status_creation(spark_fixture: SparkSession):
+    orders_data = [
+        {
+            "order_id": "53cdb2fc8bc7dce0b6741e2150273451",
+            "customer_id": "b0830fb4747a6c6d20dea0b8c802d7ef",
+            "order_status": "delivered",
+            "order_purchaser_timestamp": "2018-07-24 20:41:37",
+            "order_approved_at": "2018-07-26 03:24:27",
+            "order_delivered_carrier_date": "2018-07-26 14:31:00",
+            "order_delivered_customer_date": "2018-08-07 15:27:45",
+            "order_estimated_delivery_date": "2018-08-13 00:00:00"
+        },
+        {
+            "order_id": "136cce7faa42fdb2cefd53fdc79a6098",
+            "customer_id": "ed0271e0b7da060a393796590e7b737a",
+            "order_status": "invoiced",
+            "order_purchaser_timestamp": "2017-04-11 12:22:08",
+            "order_approved_at": "2017-04-13 13:25:17",
+            "order_delivered_carrier_date": None,
+            "order_delivered_customer_date": None,
+            "order_estimated_delivery_date": "2017-05-09 00:00:00"
+        },
+        {
+            "order_id": "ee64d42b8cf066f35eac1cf57de1aa85",
+            "customer_id": "caded193e8e47b8362864762a83db3c5",
+            "order_status": "shipped",
+            "order_purchase_timestamp": "2018-06-04 16:44:48",
+            "order_approved_at": "2018-06-05 04:31:18",
+            "order_delivered_carrier_date": "2018-06-05 14:32:00",
+            "order_delivered_customer_date": "2018-06-05 14:32:00",
+            "order_estimated_delivery_date": "2018-06-28 00:00:00"
+        }
+    ]
+    orders_df = spark_fixture.createDataFrame(data=orders_data)
+    dim_order_status = create_dim_order_status_df(orders_df=orders_df)
+    expected_order_status = [
+        Row(order_status="shipped", order_status_id=1),
+        Row(order_status="invoiced", order_status_id=2),
+        Row(order_status="delivered", order_status_id=3)
+    ]
+
+    assert dim_order_status.count() == 3
+    assert dim_order_status.collect() == expected_order_status

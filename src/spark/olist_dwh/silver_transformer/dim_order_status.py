@@ -4,7 +4,7 @@ import pyspark.sql.functions as F
 
 
 def _get_order_status_id() -> Column:
-    id_window_spec = Window.partitionBy(F.col("order_status")).orderBy(F.col("order_status"))
+    id_window_spec = Window.orderBy(F.desc(F.col("order_status")))
     return F.row_number().over(id_window_spec)
 
 

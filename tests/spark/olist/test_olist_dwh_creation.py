@@ -11,6 +11,7 @@ from src.spark.olist_dwh.silver_transformer.dim_product_category import create_d
 from src.spark.olist_dwh.silver_transformer.dim_date import create_dim_date_df
 from src.spark.olist_dwh.silver_transformer.fact_orders import create_fact_orders_df
 from src.spark.olist_dwh.silver_transformer.fact_payments import create_fact_payments_df
+from src.spark.olist_dwh.silver_transformer.fact_reviews import create_fact_reviews_df
 
 
 @pytest.fixture(scope="module")
@@ -539,3 +540,100 @@ def test_fact_payments_creation(spark_fixture: SparkSession):
     ]
 
     assert fact_payments_df.collect() == expected_fact_payments
+
+
+def test_fact_reviews_creation(spark_fixture: SparkSession):
+    reviews_data = [
+        {
+            "review_id": "7c92e0cf5216a579027044df83dccb6f",
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "review_score": 1,
+            "review_comment_title": "",
+            "review_comment_message": "Não recebi meus produtos ",
+            "review_creation_date": "2017-11-30 00:00:00",
+            "review_answer_timestamp": "2017-12-04 18:55:07"
+        },
+        {
+            "review_id": "e07549ef5311abcc92ba1784b093fb56",
+            "order_id": "136cce7faa42fdb2cefd53fdc79a6098",
+            "review_score": 2,
+            "review_comment_title": "",
+            "review_comment_message": "fiquei triste por n ter me atendido.",
+            "review_creation_date": "2017-05-13 00:00:00",
+            "review_answer_timestamp": "2017-05-13 20:25:42"
+        },
+        {
+            "review_id": "148168e0fafc52f1f67e8e9abccacf49",
+            "order_id": "ac3b0c224349e4ca9a0b0f2e8fbc4c75",
+            "review_score": 4,
+            "review_comment_title": "",
+            "review_comment_message": "",
+            "review_creation_date": "2018-05-18 00:00:00",
+            "review_answer_timestamp": "2018-05-20 19:42:14"
+        }
+    ]
+    dim_date_df = create_dim_date_df(
+        spark=spark_fixture,
+        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
+        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
+    )
+    orders_data = [
+        {
+            "order_id": "8c2b13adf3f377c8f2b06b04321b0925",
+            "customer_id": "0aad2e31b3c119c26acb8a47768cd00a",
+            "order_status": "delivered",
+            "order_purchase_timestamp": "2017-11-17 19:46:08",
+            "order_approved_at": "2017-11-17 21:31:03",
+            "order_delivered_carrier_date": "2017-11-21 12:57:04",
+            "order_delivered_customer_date": "2017-11-29 20:13:45",
+            "order_estimated_delivery_date": "2017-12-20 00:00:00"
+        },
+        {
+            "order_id": "136cce7faa42fdb2cefd53fdc79a6098",
+            "customer_id": "ed0271e0b7da060a393796590e7b737a",
+            "order_status": "invoiced",
+            "order_purchase_timestamp": "2017-04-11 12:22:08",
+            "order_approved_at": "2017-04-13 13:25:17",
+            "order_delivered_carrier_date": "2017-05-08 00:00:00",
+            "order_delivered_customer_date": "2017-05-09 00:00:00",
+            "order_estimated_delivery_date": "2017-05-09 00:00:00"
+        },
+        {
+            "order_id": "ac3b0c224349e4ca9a0b0f2e8fbc4c75",
+            "customer_id": "f444bb4bffe058f24c3b5b5a0c0f46b6",
+            "order_status": "delivered",
+            "order_purchase_timestamp": "2018-05-16 04:47:08",
+            "order_approved_at": "2018-05-16 04:55:11",
+            "order_delivered_carrier_date": "2018-05-16 14:15:00",
+            "order_delivered_customer_date": "2018-05-17 15:06:54",
+            "order_estimated_delivery_date": "2018-05-28 00:00:00"
+        }
+    ]
+    order_status_data = [
+        {
+            "order_status_id": 1,
+            "order_status": "shipped",
+        },
+        {
+            "order_status_id": 2,
+            "order_status": "invoiced",
+        },
+        {
+            "order_status_id": 3,
+            "order_status": "delivered",
+        }
+    ]
+    reviews_df = spark_fixture.createDataFrame(data=reviews_data)
+    orders_df = spark_fixture.createDataFrame(data=orders_data)
+    dim_order_status_df = spark_fixture.createDataFrame(data=order_status_data)
+    fact_reviews_df = create_fact_reviews_df(
+        reviews_df=reviews_df, dim_date_df=dim_date_df, orders_df=orders_df, dim_order_status_df=dim_order_status_df
+    )
+    expected_fact_reviews = [
+        Row(review_id='148168e0fafc52f1f67e8e9abccacf49', order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, review_creation_date_id=85902175298, review_answer_timestamp_id=85902419032, review_score=4, review_comment_title='', review_comment_message=''),
+        Row(review_id='e07549ef5311abcc92ba1784b093fb56', order_id='136cce7faa42fdb2cefd53fdc79a6098', customer_id='ed0271e0b7da060a393796590e7b737a', order_status_id=2, review_creation_date_id=2720272, review_answer_timestamp_id=2793814, review_score=2, review_comment_title='', review_comment_message='fiquei triste por n ter me atendido.'),
+        Row(review_id='7c92e0cf5216a579027044df83dccb6f', order_id='8c2b13adf3f377c8f2b06b04321b0925', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, review_creation_date_id=51540578888, review_answer_timestamp_id=51540992595, review_score=1, review_comment_title='', review_comment_message='Não recebi meus produtos ')
+    ]
+
+    assert fact_reviews_df.count() == 3
+    assert fact_reviews_df.collect() == expected_fact_reviews

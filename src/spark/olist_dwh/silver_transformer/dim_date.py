@@ -38,7 +38,7 @@ def create_dim_date_df(spark: SparkSession, min_dates: List[datetime], max_dates
     udf_get_week_day_type = F.udf(lambda x: "weekend" if x in ("Sat", "Sun") else "weekday", StringType())
     dim_date_df = dim_date_df.withColumn("year", F.date_format(F.col("timestamp"), "yyyy")) \
         .withColumn("quarter", F.date_format(F.col("timestamp"), "Q")) \
-        .withColumn("quarter_name", F.date_format(F.col("timestamp"), "qq")) \
+        .withColumn("quarter_name", F.date_format(F.col("timestamp"), "qqq")) \
         .withColumn("month", F.date_format(F.col("timestamp"), "M")) \
         .withColumn("month_name", F.date_format(F.col("timestamp"), "MMM")) \
         .withColumn("year_month", F.date_format(F.col("timestamp"), "yyyyMM")) \

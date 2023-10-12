@@ -1,8 +1,7 @@
 from datetime import datetime
 
 import pytest
-from pyspark import Row
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import SparkSession, DataFrame, Row
 
 from src.spark.olist_dwh.silver_transformer.dim_sellers import create_dim_sellers_df
 from src.spark.olist_dwh.silver_transformer.dim_customers import create_dim_customers_df

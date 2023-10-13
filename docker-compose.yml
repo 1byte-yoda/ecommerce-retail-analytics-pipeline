@@ -250,6 +250,10 @@ services:
       - ./src/spark:/usr/local/spark/spark_app # Scripts (same path in airflow and spark)
     ports:
       - "8081:8080"
+      - "4040:4040"
+      - "4041:4041"
+      - "4042:4042"
+      - "4043:4043"
       - "7077:7077"
 
   spark-worker-1:
@@ -261,7 +265,7 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark:7077
-      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_MEMORY=2G
       - SPARK_WORKER_CORES=1
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
@@ -279,7 +283,7 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark:7077
-      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_MEMORY=2G
       - SPARK_WORKER_CORES=1
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
@@ -296,7 +300,7 @@ services:
       - default_net
     ports:
       - "8888:8888"
-      - "4040:4040"
+      - "4048:4040"
     volumes:
       - ./src/jupyter/notebooks:/home/jovyan/notebooks/
       - ./src/jupyter/.jupyter:/home/jovyan/.jupyter/

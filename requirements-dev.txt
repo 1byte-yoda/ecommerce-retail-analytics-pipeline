@@ -4,3 +4,4 @@ apache-airflow==2.7.1
 unidecode
 pytest==7.4.2
 pandas==2.1.1
+pyarrow==13.0.0

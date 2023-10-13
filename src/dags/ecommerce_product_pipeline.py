@@ -165,9 +165,10 @@ create_order_performance_report_job = SparkSubmitOperator(
     num_executors=4,
     executor_cores=1,
     driver_memory="500m",
-    executor_memory="500m",
+    executor_memory="1G",
     jars=get_jars(),
     dag=dag,
+    application_args=["order_performance_report"]
 )
 
 create_order_payment_channel_report_job = SparkSubmitOperator(
@@ -179,9 +180,10 @@ create_order_payment_channel_report_job = SparkSubmitOperator(
     num_executors=4,
     executor_cores=1,
     driver_memory="500m",
-    executor_memory="500m",
+    executor_memory="1G",
     jars=get_jars(),
     dag=dag,
+    application_args=["order_payment_channel_report"]
 )
 
 gold_layer_tables = [

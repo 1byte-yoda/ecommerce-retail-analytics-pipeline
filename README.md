@@ -15,6 +15,9 @@
 ## Data Modeling (Star Schema)
 ![erd](images/olist_star_erd.png)
 
+## Notes on Airflow
+* I am only using LocalExecutor for a more efficient processing in my LocalMachine which also uses additional resources for Spark Submit
+
 ## Software Requirements
 * [Docker Desktop Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows)
 * [Docker Desktop Mac](https://docs.docker.com/desktop/install/mac-install)

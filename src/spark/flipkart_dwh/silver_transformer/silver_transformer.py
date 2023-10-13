@@ -33,42 +33,42 @@ def main(spark_uri: str, hive_uri: str, minio_uri: str, filepath: str, minio_cre
     dim_category_df = create_dim_category_df(df=modified_category_df)
     dim_sub_category_df = create_dim_sub_category_df(df=modified_category_df)
 
-    overwrite_to_table(df=dim_main_category_df, db_name=db_name, table_name="dim_main_category")
-    overwrite_to_table(df=dim_category_df, db_name=db_name, table_name="dim_category")
-    overwrite_to_table(df=dim_sub_category_df, db_name=db_name, table_name="dim_sub_category")
+    overwrite_to_table(df=dim_main_category_df, schema_name=db_name, table_name="dim_main_category")
+    overwrite_to_table(df=dim_category_df, schema_name=db_name, table_name="dim_category")
+    overwrite_to_table(df=dim_sub_category_df, schema_name=db_name, table_name="dim_sub_category")
 
     ############################################
     #         DIM_PRODUCT_SPECIFICATION        #
     ############################################
     modified_product_specs_df = transform_product_specification(df=modified_category_df)
     dim_specification_df = create_dim_specification_df(df=modified_product_specs_df)
-    overwrite_to_table(df=dim_specification_df, db_name=db_name, table_name="dim_specification")
+    overwrite_to_table(df=dim_specification_df, schema_name=db_name, table_name="dim_specification")
 
     ############################################
     #                DIM_BRAND                 #
     ############################################
     modified_brand_df = transform_brand(df=modified_product_specs_df)
     dim_brand_df = create_dim_brand_df(df=modified_brand_df)
-    overwrite_to_table(df=dim_brand_df, db_name=db_name, table_name="dim_brand")
+    overwrite_to_table(df=dim_brand_df, schema_name=db_name, table_name="dim_brand")
 
     ############################################
     #                 DIM_DATE                 #
     ############################################
     modified_date_df = transform_date(df=modified_brand_df)
     dim_date_df = create_dim_date_df(df=modified_date_df)
-    overwrite_to_table(df=dim_date_df, db_name=db_name, table_name="dim_date")
+    overwrite_to_table(df=dim_date_df, schema_name=db_name, table_name="dim_date")
 
     ############################################
     #                DIM_PRODUCT               #
     ############################################
     dim_product_df = create_dim_product_df(df=modified_date_df)
-    overwrite_to_table(df=dim_product_df, db_name=db_name, table_name="dim_product")
+    overwrite_to_table(df=dim_product_df, schema_name=db_name, table_name="dim_product")
 
     ############################################
     #          FACT_PRODUCT_POSTING            #
     ############################################
     fact_product_posting_df = create_fact_product_posting(df=modified_date_df)
-    overwrite_to_table(df=fact_product_posting_df, db_name=db_name, table_name="fact_product_posting")
+    overwrite_to_table(df=fact_product_posting_df, schema_name=db_name, table_name="fact_product_posting")
 
 
 if __name__ == '__main__':

@@ -5,10 +5,7 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 def get_product_category_name_translation_schema() -> StructType:
     return StructType(
-        [
-            StructField("product_category_name", dataType=StringType()),
-            StructField("product_category_name_english", dataType=StringType())
-        ]
+        [StructField("product_category_name", dataType=StringType()), StructField("product_category_name_english", dataType=StringType())]
     )
 
 
@@ -31,7 +28,5 @@ def get_products_schema() -> StructType:
 def create_dim_products_df(products_df: DataFrame, product_category_name_translation_df: DataFrame) -> DataFrame:
     product_category_name_translation_df = product_category_name_translation_df.withColumnRenamed("product_category_name", "trans_category_name")
     return products_df.join(
-        product_category_name_translation_df,
-        on=F.col("product_category_name") == F.col("trans_category_name"),
-        how="left"
+        product_category_name_translation_df, on=F.col("product_category_name") == F.col("trans_category_name"), how="left"
     ).selectExpr("product_id", "product_category_name", "product_category_name_english")

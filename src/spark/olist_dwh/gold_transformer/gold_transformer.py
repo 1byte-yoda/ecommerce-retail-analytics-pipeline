@@ -9,7 +9,8 @@ from helper import overwrite_to_table
 
 
 def create_order_performance_df(spark: SparkSession) -> DataFrame:
-    return spark.sql("""
+    return spark.sql(
+        """
         SELECT d_date1.year
             ,d_date1.year_month_start
             ,d_date1.month
@@ -39,11 +40,13 @@ def create_order_performance_df(spark: SparkSession) -> DataFrame:
             ,d_date1.year_week
             ,d_date1.week_start
             ,d_date1.time_of_day
-    """)
+    """
+    )
 
 
 def create_order_payment_channel_report_df(spark: SparkSession) -> DataFrame:
-    return spark.sql("""
+    return spark.sql(
+        """
         SELECT d_date1.year
             ,d_date1.year_month_start
             ,d_date1.month
@@ -62,7 +65,8 @@ def create_order_payment_channel_report_df(spark: SparkSession) -> DataFrame:
             ,d_date1.year
             ,d_date1.year_month_start
             ,d_date1.month
-    """)
+    """
+    )
 
 
 def main(spark: SparkSession):
@@ -73,21 +77,24 @@ def main(spark: SparkSession):
     overwrite_to_table(df=order_payment_channel_report_df, schema_name="gold", table_name="order_payment_channel_report")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     SPARK_URI = "spark://spark:7077"
     HIVE_URI = "thrift://hive-metastore:9083"
     MINIO_URI = "http://minio:9000"
 
-    builder = SparkSession.builder.appName("olist_silver_transformer").master(SPARK_URI) \
-        .config("spark.hadoop.hive.metastore.uris", HIVE_URI) \
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
-        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
-        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
-        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
-        .config("spark.hadoop.fs.s3a.access.key", "datalake") \
-        .config("spark.hadoop.fs.s3a.secret.key", "datalake") \
-        .config("spark.hadoop.fs.s3a.endpoint", MINIO_URI) \
-        .config("spark.hadoop.fs.s3a.path.style.access", "true") \
+    builder = (
+        SparkSession.builder.appName("olist_silver_transformer")
+        .master(SPARK_URI)
+        .config("spark.hadoop.hive.metastore.uris", HIVE_URI)
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+        .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+        .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+        .config("spark.hadoop.fs.s3a.access.key", "datalake")
+        .config("spark.hadoop.fs.s3a.secret.key", "datalake")
+        .config("spark.hadoop.fs.s3a.endpoint", MINIO_URI)
+        .config("spark.hadoop.fs.s3a.path.style.access", "true")
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    )
     spark_session = configure_spark_with_delta_pip(builder).enableHiveSupport().getOrCreate()
     main(spark=spark_session)

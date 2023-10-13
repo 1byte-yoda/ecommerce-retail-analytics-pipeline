@@ -13,7 +13,7 @@ def get_orders_schema() -> StructType:
             StructField("order_approved_at", TimestampType()),
             StructField("order_delivered_carrier_date", TimestampType()),
             StructField("order_delivered_customer_date", TimestampType()),
-            StructField("order_estimated_delivery_date", TimestampType())
+            StructField("order_estimated_delivery_date", TimestampType()),
         ]
     )
 
@@ -61,10 +61,11 @@ def create_fact_orders_df(
     orders_df = orders_df.withColumnRenamed("order_status", "o_order_status")
     processed_dim_date_df = process_dim_date_df(spark=spark, dim_date_df=dim_date_df, orders_df=orders_df)
 
-    fact_orders_df = orders_df.join(order_items_df, on=F.col("order_id") == F.col("order_item_order_id"), how="inner") \
-        .join(dim_order_status_df, on=F.col("o_order_status") == F.col("order_status"), how="inner") \
-        .join(dim_date_df.alias("shipping_limit"), on=dim_date_df["unix_timestamp"] == F.unix_timestamp("shipping_limit_date")) \
-        .join(processed_dim_date_df, on=F.col("d_order_id") == F.col("order_id"), how="inner") \
+    fact_orders_df = (
+        orders_df.join(order_items_df, on=F.col("order_id") == F.col("order_item_order_id"), how="inner")
+        .join(dim_order_status_df, on=F.col("o_order_status") == F.col("order_status"), how="inner")
+        .join(dim_date_df.alias("shipping_limit"), on=dim_date_df["unix_timestamp"] == F.unix_timestamp("shipping_limit_date"))
+        .join(processed_dim_date_df, on=F.col("d_order_id") == F.col("order_id"), how="inner")
         .selectExpr(
             "order_id",
             "order_item_id",
@@ -79,7 +80,8 @@ def create_fact_orders_df(
             "order_delivered_customer_date_id",
             "order_estimated_delivery_date_id",
             "price",
-            "freight_value"
+            "freight_value",
         )
+    )
 
     return fact_orders_df

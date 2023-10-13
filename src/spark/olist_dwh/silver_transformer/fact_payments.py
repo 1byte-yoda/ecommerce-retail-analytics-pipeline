@@ -18,7 +18,7 @@ def get_order_payments_schema() -> StructType:
             StructField("payment_sequential", IntegerType()),
             StructField("payment_type", StringType()),
             StructField("payment_installments", IntegerType()),
-            StructField("payment_value", DoubleType())
+            StructField("payment_value", DoubleType()),
         ]
     )
 
@@ -30,9 +30,10 @@ def create_fact_payments_df(
     orders_df = orders_df.withColumnRenamed("order_status", "o_order_status")
     processed_dim_date_df = process_dim_date_df(spark=spark, dim_date_df=dim_date_df, orders_df=orders_df)
 
-    fact_payments_df = payments_df.join(orders_df, on=F.col("order_id") == F.col("p_order_id"), how="inner") \
-        .join(dim_order_status_df, on=F.col("order_status") == F.col("o_order_status"), how="inner") \
-        .join(processed_dim_date_df, on=F.col("d_order_id") == F.col("order_id"), how="inner") \
+    fact_payments_df = (
+        payments_df.join(orders_df, on=F.col("order_id") == F.col("p_order_id"), how="inner")
+        .join(dim_order_status_df, on=F.col("order_status") == F.col("o_order_status"), how="inner")
+        .join(processed_dim_date_df, on=F.col("d_order_id") == F.col("order_id"), how="inner")
         .select(
             "order_id",
             "customer_id",
@@ -45,7 +46,8 @@ def create_fact_payments_df(
             "payment_sequential",
             "payment_type",
             "payment_installments",
-            "payment_value"
+            "payment_value",
         )
+    )
 
     return fact_payments_df

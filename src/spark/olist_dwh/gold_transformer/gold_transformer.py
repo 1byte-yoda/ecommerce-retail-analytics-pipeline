@@ -23,7 +23,7 @@ def create_order_performance_df(spark: SparkSession) -> DataFrame:
             ,COUNT(DISTINCT fact_orders.order_id) AS total_orders
             ,ROUND(SUM(price), 2) AS total_amount
             ,ROUND(AVG(freight_value), 2) AS avg_freight
-            ,ROUND(IF(AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp)) < 0, 0, AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp))), 2) AS avg_days_delivery_delay
+            ,ROUND(IF(AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp)) < 0, 0, AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp))), 2) AS avg_days_delivery_delay  # noqa
             ,ROUND(AVG(DATEDIFF(d_date1.timestamp, d_date2.timestamp)), 2) AS avg_days_to_deliver
         FROM silver.fact_orders
         JOIN silver.dim_order_status dos ON dos.order_status_id = fact_orders.order_status_id

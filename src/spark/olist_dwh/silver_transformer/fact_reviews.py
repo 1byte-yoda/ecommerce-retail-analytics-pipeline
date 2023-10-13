@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType
 

@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, SparkSession, Window
+from pyspark.sql import DataFrame, Window
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType, TimestampType
 

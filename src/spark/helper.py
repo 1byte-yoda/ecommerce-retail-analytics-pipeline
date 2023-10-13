@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-from pyspark.sql.types import StructType, StructField, StringType, ArrayType, BooleanType, IntegerType, FloatType
+import pyspark.sql.functions as F
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType, DoubleType
 from delta import configure_spark_with_delta_pip, DeltaTable
 from pyspark.sql import SparkSession, DataFrame
 
@@ -54,17 +55,44 @@ def get_products_csv_schema() -> StructType:
     ])
 
 
-def overwrite_to_table(df: DataFrame, db_name: str, table_name: str):
+def overwrite_to_table(df: DataFrame, schema_name: str, table_name: str):
     df.write.format("delta") \
         .mode("overwrite") \
-        .option("path", f"s3a://{db_name}/{table_name}") \
-        .saveAsTable(f"{db_name}.{table_name}")
+        .option("path", f"s3a://{schema_name}/{table_name}") \
+        .saveAsTable(f"{schema_name}.{table_name}")
 
 
-def merge_to_table(spark: SparkSession, input_df: DataFrame, db_name: str, table_name: str, partition_column: str, join_condition: str):
+def get_geolocations_schema() -> StructType:
+    return StructType(
+        [
+            StructField("geolocation_zip_code_prefix", dataType=IntegerType()),
+            StructField("geolocation_lat", dataType=DoubleType()),
+            StructField("geolocation_lng", dataType=IntegerType()),
+            StructField("geolocation_city", dataType=StringType()),
+            StructField("geolocation_state", dataType=StringType()),
+        ]
+    )
 
-    if spark.catalog.tableExists(tableName=f"{db_name}.{table_name}"):
-        delta_table = DeltaTable.forPath(path=f"s3a://{db_name}/{table_name}", sparkSession=spark)
+
+def get_timestamp_fields(df: DataFrame) -> List[str]:
+    return [c for c in df.columns if dict(df.dtypes).get(c) == "timestamp"]
+
+
+def get_date_df(df_list: List[DataFrame]) -> DataFrame:
+    fields = get_timestamp_fields(df_list[0])
+    base_df = df_list[0].select(F.explode(F.array(*fields)).alias("timestamp"))
+
+    for df in df_list[1:]:
+        fields = [c for c in df.columns if dict(df.dtypes).get(c) == "timestamp"]
+        new_df = df.select(F.explode(F.array(*fields)).alias("timestamp"))
+        base_df = base_df.union(new_df)
+    return base_df.distinct()
+
+
+def merge_to_table(spark: SparkSession, input_df: DataFrame, schema_name: str, table_name: str, partition_column: str, join_condition: str):
+
+    if spark.catalog.tableExists(tableName=f"{schema_name}.{table_name}"):
+        delta_table = DeltaTable.forPath(path=f"s3a://{schema_name}/{table_name}", sparkSession=spark)
         delta_table.alias("target") \
             .merge(source=input_df.alias("src"), condition=join_condition) \
             .whenMatchedUpdateAll() \
@@ -76,4 +104,4 @@ def merge_to_table(spark: SparkSession, input_df: DataFrame, db_name: str, table
             .format("delta") \
             .mode("overwrite") \
             .partitionBy(partition_column) \
-            .saveAsTable(f"{db_name}.{table_name}")
+            .saveAsTable(f"{schema_name}.{table_name}")

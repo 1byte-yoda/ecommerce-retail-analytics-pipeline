@@ -20,7 +20,7 @@ def transform_date(df: DataFrame) -> DataFrame:
         F.date_format("crawl_timestamp", "E").alias("day_name"),
         F.date_format("crawl_timestamp", "MMM").alias("month_name"),
         F.weekofyear("crawl_timestamp").alias("year_week"),
-        F.quarter("crawl_timestamp").alias("quarter")
+        F.quarter("crawl_timestamp").alias("quarter"),
     )
 
 

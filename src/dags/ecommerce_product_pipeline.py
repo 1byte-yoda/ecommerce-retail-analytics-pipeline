@@ -24,14 +24,14 @@ default_args = {
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
-    "retry_delay": timedelta(minutes=1)
+    "retry_delay": timedelta(minutes=1),
 }
 
 dag = DAG(
     dag_id=spark_app_name,
     description="This is the data pipeline for the Olist Ecommerce Data Platform.",
     default_args=default_args,
-    schedule_interval=timedelta(days=1)
+    schedule_interval=timedelta(days=1),
 )
 
 bronze_layer_stage = DummyOperator(task_id="bronze_layer_stage", dag=dag)
@@ -47,7 +47,7 @@ silver_layer_transformer_job = SparkSubmitOperator(
     driver_memory="500m",
     executor_memory="1700m",
     jars=get_jars(),
-    dag=dag
+    dag=dag,
 )
 
 gold_layer_transformer_job = SparkSubmitOperator(
@@ -61,7 +61,7 @@ gold_layer_transformer_job = SparkSubmitOperator(
     driver_memory="500m",
     executor_memory="1700m",
     jars=get_jars(),
-    dag=dag
+    dag=dag,
 )
 
 bronze_layer_stage >> silver_layer_transformer_job >> gold_layer_transformer_job

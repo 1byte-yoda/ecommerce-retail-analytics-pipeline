@@ -24,7 +24,7 @@ def create_fact_product_posting(df: DataFrame) -> DataFrame:
         F.col("discounted_price"),
         F.col("is_fk_advantage_product").cast(BooleanType()),
         F.col("product_rating"),
-        F.col("overall_rating")
+        F.col("overall_rating"),
     )
     fact_product_posting_df.printSchema()
 

@@ -15,15 +15,10 @@ def transform_brand(df: DataFrame) -> DataFrame:
 def create_dim_brand_df(df: DataFrame) -> DataFrame:
     logger.info("Creating dim_brand_df ...")
 
-    dim_brand_df = df.select(
-        F.col("brand_id"),
-        F.col("brand")
-    ).distinct().select(
-        F.monotonically_increasing_id().cast(IntegerType()).alias("id"),
-        F.col("*")
+    dim_brand_df = (
+        df.select(F.col("brand_id"), F.col("brand")).distinct().select(F.monotonically_increasing_id().cast(IntegerType()).alias("id"), F.col("*"))
     )
 
     dim_brand_df.printSchema()
 
     return dim_brand_df
-

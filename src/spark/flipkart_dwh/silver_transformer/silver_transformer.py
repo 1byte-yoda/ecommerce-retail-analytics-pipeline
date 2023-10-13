@@ -16,12 +16,7 @@ def main(spark_uri: str, hive_uri: str, minio_uri: str, filepath: str, minio_cre
     )
     products_schema = get_products_csv_schema()
 
-    df = (spark.read.format("csv")
-          .option("escape", '"')
-          .option("multiLine", True)
-          .option("header", True)
-          .schema(products_schema)
-          .load(path=filepath))
+    df = spark.read.format("csv").option("escape", '"').option("multiLine", True).option("header", True).schema(products_schema).load(path=filepath)
 
     db_name = "silver"
 
@@ -71,7 +66,7 @@ def main(spark_uri: str, hive_uri: str, minio_uri: str, filepath: str, minio_cre
     overwrite_to_table(df=fact_product_posting_df, schema_name=db_name, table_name="fact_product_posting")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # TODO: Make it dynamic for local and prod env
     SPARK_URI = f"spark://spark:7077"
     HIVE_URI = f"thrift://hive-metastore:9083"

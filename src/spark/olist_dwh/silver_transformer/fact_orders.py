@@ -1,5 +1,35 @@
 from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
+from pyspark.sql.types import StructType, StructField, StringType, TimestampType, DoubleType
+
+
+def get_orders_schema() -> StructType:
+    return StructType(
+        [
+            StructField("order_id", StringType()),
+            StructField("customer_id", StringType()),
+            StructField("order_status", StringType()),
+            StructField("order_purchase_timestamp", TimestampType()),
+            StructField("order_approved_at", TimestampType()),
+            StructField("order_delivered_carrier_date", TimestampType()),
+            StructField("order_delivered_customer_date", TimestampType()),
+            StructField("order_estimated_delivery_date", TimestampType())
+        ]
+    )
+
+
+def get_order_items_schema() -> StructType:
+    return StructType(
+        [
+            StructField("order_id", StringType()),
+            StructField("order_item_id", StringType()),
+            StructField("product_id", StringType()),
+            StructField("seller_id", StringType()),
+            StructField("shipping_limit_date", TimestampType()),
+            StructField("price", DoubleType()),
+            StructField("freight", DoubleType()),
+        ]
+    )
 
 
 def process_dim_date_df(spark: SparkSession, dim_date_df: DataFrame, orders_df: DataFrame) -> DataFrame:

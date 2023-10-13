@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
+
 sys.path.append("/sources/spark_app/olist_dwh/silver_transformer")  # noqa
 sys.path.append("../../../src/spark/olist_dwh/silver_transformer")  # noqa
 
@@ -7,6 +9,18 @@ from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
 
 from fact_orders import process_dim_date_df
+
+
+def get_order_payments_schema() -> StructType:
+    return StructType(
+        [
+            StructField("order_id", StringType()),
+            StructField("payment_sequential", IntegerType()),
+            StructField("payment_type", StringType()),
+            StructField("payment_installments", IntegerType()),
+            StructField("payment_value", DoubleType())
+        ]
+    )
 
 
 def create_fact_payments_df(

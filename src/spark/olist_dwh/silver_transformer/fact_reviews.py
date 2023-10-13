@@ -1,5 +1,20 @@
 from pyspark.sql import DataFrame, SparkSession
 import pyspark.sql.functions as F
+from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType
+
+
+def get_order_reviews_schema() -> StructType:
+    return StructType(
+        [
+            StructField("review_id", StringType()),
+            StructField("order_id", StringType()),
+            StructField("review_score", FloatType()),
+            StructField("review_comment_title", StringType()),
+            StructField("review_comment_message", StringType()),
+            StructField("review_creation_date", TimestampType()),
+            StructField("review_answer_timestamp", TimestampType())
+        ]
+    )
 
 
 def create_fact_reviews_df(reviews_df: DataFrame, orders_df: DataFrame, dim_date_df: DataFrame, dim_order_status_df: DataFrame) -> DataFrame:

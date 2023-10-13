@@ -1,11 +1,11 @@
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import DataFrame, SparkSession, Window
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
 
 
 def create_dim_date_df(date_df: DataFrame) -> DataFrame:
     udf_get_week_day_type = F.udf(lambda x: "weekend" if x in ("Sat", "Sun") else "weekday", StringType())
-    dim_date_df = date_df.withColumn("date_id", F.monotonically_increasing_id()) \
+    dim_date_df = date_df.withColumn("date_id", F.row_number().over(Window.orderBy("timestamp"))) \
         .withColumn("year", F.date_format(F.col("timestamp"), "yyyy").cast(IntegerType())) \
         .withColumn("unix_timestamp", F.unix_timestamp(F.col("timestamp").cast("timestamp"))) \
         .withColumn("quarter", F.date_format(F.col("timestamp"), "Q").cast(IntegerType())) \

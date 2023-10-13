@@ -27,7 +27,7 @@ def get_order_items_schema() -> StructType:
             StructField("seller_id", StringType()),
             StructField("shipping_limit_date", TimestampType()),
             StructField("price", DoubleType()),
-            StructField("freight", DoubleType()),
+            StructField("freight_value", DoubleType()),
         ]
     )
 

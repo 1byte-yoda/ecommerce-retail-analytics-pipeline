@@ -15,6 +15,9 @@
 ## Data Modeling (Star Schema)
 ![erd](images/olist_star_erd.png)
 
+## Airflow DAG
+![dag](images/dag.png)
+
 ## Notes on Airflow
 * I am only using LocalExecutor for a more efficient processing in my LocalMachine which also uses additional resources for Spark Submit
 

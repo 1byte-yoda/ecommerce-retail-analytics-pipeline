@@ -3,3 +3,5 @@ delta_spark==2.4.0
 apache-airflow==2.7.1
 unidecode
 pytest==7.4.2
+black
+flake8

@@ -8,8 +8,8 @@ from pyspark.sql import SparkSession, DataFrame
 from helper import overwrite_to_table
 
 
-def create_order_performance_df(spark: SparkSession) -> DataFrame:
-    return spark.sql(
+def create_order_performance_report_df(spark: SparkSession):
+    order_performance_df = spark.sql(
         """
         SELECT d_date1.year
             ,d_date1.year_month_start
@@ -23,7 +23,7 @@ def create_order_performance_df(spark: SparkSession) -> DataFrame:
             ,COUNT(DISTINCT fact_orders.order_id) AS total_orders
             ,ROUND(SUM(price), 2) AS total_amount
             ,ROUND(AVG(freight_value), 2) AS avg_freight
-            ,ROUND(IF(AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp)) < 0, 0, AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp))), 2) AS avg_days_delivery_delay  # noqa
+            ,ROUND(IF(AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp)) < 0, 0, AVG(DATEDIFF(d_date1.timestamp, d_date3.timestamp))), 2) AS avg_days_delivery_delay
             ,ROUND(AVG(DATEDIFF(d_date1.timestamp, d_date2.timestamp)), 2) AS avg_days_to_deliver
         FROM silver.fact_orders
         JOIN silver.dim_order_status dos ON dos.order_status_id = fact_orders.order_status_id
@@ -42,10 +42,11 @@ def create_order_performance_df(spark: SparkSession) -> DataFrame:
             ,d_date1.time_of_day
     """
     )
+    overwrite_to_table(df=order_performance_df, schema_name="gold", table_name="order_performance_report")
 
 
-def create_order_payment_channel_report_df(spark: SparkSession) -> DataFrame:
-    return spark.sql(
+def create_order_payment_channel_report_df(spark: SparkSession):
+    order_payment_channel_report_df = spark.sql(
         """
         SELECT d_date1.year
             ,d_date1.year_month_start
@@ -67,14 +68,16 @@ def create_order_payment_channel_report_df(spark: SparkSession) -> DataFrame:
             ,d_date1.month
     """
     )
-
-
-def main(spark: SparkSession):
-    order_performance_df = create_order_performance_df(spark=spark)
-    overwrite_to_table(df=order_performance_df, schema_name="gold", table_name="order_performance_report")
-
-    order_payment_channel_report_df = create_order_payment_channel_report_df(spark=spark)
     overwrite_to_table(df=order_payment_channel_report_df, schema_name="gold", table_name="order_payment_channel_report")
+
+
+def main(spark: SparkSession, table_name: str):
+    create_func_map = {
+        "order_performance_report": create_order_performance_report_df,
+        "order_payment_channel_report": create_order_payment_channel_report_df
+    }
+    function = create_func_map[table_name]
+    function(spark=spark)
 
 
 if __name__ == "__main__":
@@ -97,4 +100,4 @@ if __name__ == "__main__":
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
     )
     spark_session = configure_spark_with_delta_pip(builder).enableHiveSupport().getOrCreate()
-    main(spark=spark_session)
+    main(spark=spark_session, table_name=sys.argv[1])

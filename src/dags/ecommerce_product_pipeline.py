@@ -36,32 +36,160 @@ dag = DAG(
 
 bronze_layer_stage = DummyOperator(task_id="bronze_layer_stage", dag=dag)
 
-silver_layer_transformer_job = SparkSubmitOperator(
-    task_id="silver_layer_transformer_job",
+create_dim_customers_job = SparkSubmitOperator(
+    task_id="create_dim_customers_job",
     application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
-    name=f"{spark_app_name}_silver",
+    name=f"{spark_app_name}_create_dim_customers_job",
     conn_id="spark",
     verbose=False,
-    num_executors=2,
+    num_executors=1,
     executor_cores=1,
     driver_memory="500m",
-    executor_memory="1700m",
+    executor_memory="500m",
     jars=get_jars(),
     dag=dag,
+    application_args=["dim_customers"]
 )
 
-gold_layer_transformer_job = SparkSubmitOperator(
-    task_id="gold_layer_transformer_job",
+create_dim_sellers_job = SparkSubmitOperator(
+    task_id="create_dim_sellers_job",
+    application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
+    name=f"{spark_app_name}_create_dim_sellers_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=1,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="500m",
+    jars=get_jars(),
+    dag=dag,
+    application_args=["dim_sellers"]
+)
+
+create_dim_product_category_job = SparkSubmitOperator(
+    task_id="create_dim_product_category_job",
+    application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
+    name=f"{spark_app_name}_create_dim_product_category_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=1,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="500m",
+    jars=get_jars(),
+    dag=dag,
+    application_args=["dim_product_category"]
+)
+
+create_dim_order_status_job = SparkSubmitOperator(
+    task_id="create_dim_order_status_job",
+    application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
+    name=f"{spark_app_name}_create_dim_order_status_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=1,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="500m",
+    jars=get_jars(),
+    dag=dag,
+    application_args=["dim_order_status"]
+)
+
+create_dim_date_job = SparkSubmitOperator(
+    task_id="create_dim_date_job",
+    application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
+    name=f"{spark_app_name}_create_dim_date_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=4,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="1G",
+    jars=get_jars(),
+    dag=dag,
+    application_args=["dim_date"]
+)
+
+create_fact_payments_job = SparkSubmitOperator(
+    task_id="create_fact_payments_job",
+    application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
+    name=f"{spark_app_name}_create_fact_payments_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=4,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="1G",
+    jars=get_jars(),
+    dag=dag,
+    application_args=["fact_payments"]
+)
+
+create_fact_reviews_job = SparkSubmitOperator(
+    task_id="create_fact_reviews_job",
+    application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
+    name=f"{spark_app_name}_create_fact_reviews_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=4,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="1G",
+    jars=get_jars(),
+    dag=dag,
+    application_args=["fact_reviews"]
+)
+
+create_fact_orders_job = SparkSubmitOperator(
+    task_id="create_fact_orders_job",
+    application="/sources/spark_app/olist_dwh/silver_transformer/silver_transformer.py",
+    name=f"{spark_app_name}_create_fact_orders_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=4,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="1G",
+    jars=get_jars(),
+    dag=dag,
+    application_args=["fact_orders"]
+)
+
+create_order_performance_report_job = SparkSubmitOperator(
+    task_id="create_order_performance_report_job",
     application="/sources/spark_app/olist_dwh/gold_transformer/gold_transformer.py",
-    name=f"{spark_app_name}_gold",
+    name=f"{spark_app_name}_create_order_performance_report_job",
     conn_id="spark",
     verbose=False,
-    num_executors=2,
+    num_executors=4,
     executor_cores=1,
     driver_memory="500m",
-    executor_memory="1700m",
+    executor_memory="500m",
     jars=get_jars(),
     dag=dag,
 )
 
-bronze_layer_stage >> silver_layer_transformer_job >> gold_layer_transformer_job
+create_order_payment_channel_report_job = SparkSubmitOperator(
+    task_id="create_order_payment_channel_report_job",
+    application="/sources/spark_app/olist_dwh/gold_transformer/gold_transformer.py",
+    name=f"{spark_app_name}_create_order_payment_channel_report_job",
+    conn_id="spark",
+    verbose=False,
+    num_executors=4,
+    executor_cores=1,
+    driver_memory="500m",
+    executor_memory="500m",
+    jars=get_jars(),
+    dag=dag,
+)
+
+gold_layer_tables = [
+    create_order_performance_report_job,
+    create_order_payment_channel_report_job
+]
+
+
+bronze_layer_stage >> create_dim_customers_job >> create_dim_sellers_job >> create_dim_date_job >> create_dim_product_category_job  # noqa
+create_dim_product_category_job >> create_dim_order_status_job >> create_fact_payments_job  # noqa
+create_fact_payments_job >> create_fact_reviews_job >> create_fact_orders_job >> gold_layer_tables  # noqa

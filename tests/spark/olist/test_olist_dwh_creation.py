@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, date
 
 import pytest
 from pyspark.sql import SparkSession, DataFrame, Row
+from pyspark.sql.types import TimestampType, StructField, StructType
 
 from src.spark.olist_dwh.silver_transformer.dim_sellers import create_dim_sellers_df
 from src.spark.olist_dwh.silver_transformer.dim_customers import create_dim_customers_df
@@ -23,11 +24,39 @@ def spark_fixture():
 
 @pytest.fixture(scope="module")
 def dim_date_df_fixture(spark_fixture: SparkSession):
-    yield create_dim_date_df(
-        spark=spark_fixture,
-        min_dates=[datetime.fromisoformat("2017-04-11 12:22:08"), datetime.fromisoformat("2017-04-19 13:25:17")],
-        max_dates=[datetime.fromisoformat("2018-06-28 00:00:00"), datetime.fromisoformat("2018-06-13 04:30:33")]
+    date_df = spark_fixture.createDataFrame(
+        data=[
+            {"timestamp": datetime.fromisoformat("2017-04-19 13:25:17")},
+            {"timestamp": datetime.fromisoformat("2018-06-28 00:00:00")},
+            {"timestamp": datetime.fromisoformat("2018-06-13 04:30:33")},
+            {"timestamp": datetime.fromisoformat("2018-06-04 16:44:48")},
+            {"timestamp": datetime.fromisoformat("2018-06-05 04:31:18")},
+            {"timestamp": datetime.fromisoformat("2018-06-05 14:32:00")},
+            {"timestamp": datetime.fromisoformat("2017-11-23 20:31:40")},
+            {"timestamp": datetime.fromisoformat("2017-11-30 00:00:00")},
+            {"timestamp": datetime.fromisoformat("2017-12-04 18:55:07")},
+            {"timestamp": datetime.fromisoformat("2017-05-13 00:00:00")},
+            {"timestamp": datetime.fromisoformat("2017-05-13 20:25:42")},
+            {"timestamp": datetime.fromisoformat("2018-05-18 00:00:00")},
+            {"timestamp": datetime.fromisoformat("2018-05-20 19:42:14")},
+            {"timestamp": datetime.fromisoformat("2017-11-17 19:46:08")},
+            {"timestamp": datetime.fromisoformat("2017-11-17 21:31:03")},
+            {"timestamp": datetime.fromisoformat("2017-11-21 12:57:04")},
+            {"timestamp": datetime.fromisoformat("2017-11-29 20:13:45")},
+            {"timestamp": datetime.fromisoformat("2017-12-20 00:00:00")},
+            {"timestamp": datetime.fromisoformat("2017-04-11 12:22:08")},
+            {"timestamp": datetime.fromisoformat("2017-04-13 13:25:17")},
+            {"timestamp": datetime.fromisoformat("2017-05-08 00:00:00")},
+            {"timestamp": datetime.fromisoformat("2017-05-09 00:00:00")},
+            {"timestamp": datetime.fromisoformat("2018-05-16 04:47:08")},
+            {"timestamp": datetime.fromisoformat("2018-05-16 04:55:11")},
+            {"timestamp": datetime.fromisoformat("2018-05-16 14:15:00")},
+            {"timestamp": datetime.fromisoformat("2018-05-17 15:06:54")},
+            {"timestamp": datetime.fromisoformat("2018-05-28 00:00:00")}
+        ],
+        schema=StructType([StructField("timestamp", dataType=TimestampType())])
     )
+    yield create_dim_date_df(date_df=date_df)
 
 
 def test_dim_customers_creation(spark_fixture: SparkSession):
@@ -293,18 +322,24 @@ def test_dim_product_category(spark_fixture: SparkSession):
 
 
 def test_dim_date_creation(spark_fixture: SparkSession):
-    dim_date_df = create_dim_date_df(
-        spark=spark_fixture,
-        min_dates=[datetime(2023, 10, 12, 17, 51, 0), datetime(2023, 10, 12, 17, 51, 30), datetime(2023, 10, 17, 17, 51, 0)],
-        max_dates=[datetime(2023, 10, 12, 17, 51, 5), datetime(2023, 10, 12, 17, 1, 9), datetime(2023, 10, 12, 17, 2, 35)]
+    date_df = spark_fixture.createDataFrame(
+        [
+            {"timestamp": datetime(2023, 10, 12, 17, 51, 0)},
+            {"timestamp": datetime(2023, 10, 12, 17, 51, 30)},
+            {"timestamp": datetime(2023, 10, 17, 17, 51, 0)},
+            {"timestamp": datetime(2023, 10, 12, 17, 51, 5)},
+            {"timestamp": datetime(2023, 10, 12, 17, 1, 9)},
+            {"timestamp": datetime(2023, 10, 12, 17, 2, 35)}
+        ], schema=StructType([StructField("timestamp", TimestampType())])
     )
+    dim_date_df = create_dim_date_df(date_df=date_df)
     expected_dim_date = [
-        Row(date_id=8589934592, unix_timestamp=1697104260, timestamp=datetime(2023, 10, 12, 17, 51), year="2023", quarter="4", quarter_name="Q4", month="10", month_name="Oct", year_month="202310", year_week="202341", week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),  # noqa
-        Row(date_id=25769803776, unix_timestamp=1697104261, timestamp=datetime(2023, 10, 12, 17, 51, 1), year="2023", quarter="4", quarter_name="Q4", month="10", month_name="Oct", year_month="202310", year_week="202341", week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),  # noqa
-        Row(date_id=42949672960, unix_timestamp=1697104262, timestamp=datetime(2023, 10, 12, 17, 51, 2), year="2023", quarter="4", quarter_name="Q4", month="10", month_name="Oct", year_month="202310", year_week="202341", week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),  # noqa
-        Row(date_id=60129542144, unix_timestamp=1697104263, timestamp=datetime(2023, 10, 12, 17, 51, 3), year="2023", quarter="4", quarter_name="Q4", month="10", month_name="Oct", year_month="202310", year_week="202341", week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),  # noqa
-        Row(date_id=77309411328, unix_timestamp=1697104264, timestamp=datetime(2023, 10, 12, 17, 51, 4), year="2023", quarter="4", quarter_name="Q4", month="10", month_name="Oct", year_month="202310", year_week="202341", week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),  # noqa
-        Row(date_id=94489280512, unix_timestamp=1697104265, timestamp=datetime(2023, 10, 12, 17, 51, 5), year="2023", quarter="4", quarter_name="Q4", month="10", month_name="Oct", year_month="202310", year_week="202341", week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon")  # noqa
+        Row(timestamp=datetime(2023, 10, 12, 17, 1, 9), date_id=1, year=2023, unix_timestamp=1697101269, quarter=4, quarter_name="Q4", month=10, month_name="Oct", year_month=202310, year_month_start=datetime(2023, 10, 1, 0, 0), year_week=202341, week_start=date(2023, 10, 9), week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),
+        Row(timestamp=datetime(2023, 10, 12, 17, 2, 35), date_id=2, year=2023, unix_timestamp=1697101355, quarter=4, quarter_name="Q4", month=10, month_name="Oct", year_month=202310, year_month_start=datetime(2023, 10, 1, 0, 0), year_week=202341, week_start=date(2023, 10, 9), week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),
+        Row(timestamp=datetime(2023, 10, 12, 17, 51), date_id=3, year=2023, unix_timestamp=1697104260, quarter=4, quarter_name="Q4", month=10, month_name="Oct", year_month=202310, year_month_start=datetime(2023, 10, 1, 0, 0), year_week=202341, week_start=date(2023, 10, 9), week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),
+        Row(timestamp=datetime(2023, 10, 12, 17, 51, 5), date_id=4, year=2023, unix_timestamp=1697104265, quarter=4, quarter_name="Q4", month=10, month_name="Oct", year_month=202310, year_month_start=datetime(2023, 10, 1, 0, 0), year_week=202341, week_start=date(2023, 10, 9), week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),
+        Row(timestamp=datetime(2023, 10, 12, 17, 51, 30), date_id=5, year=2023, unix_timestamp=1697104290, quarter=4, quarter_name="Q4", month=10, month_name="Oct", year_month=202310, year_month_start=datetime(2023, 10, 1, 0, 0), year_week=202341, week_start=date(2023, 10, 9), week_day_name="Thu", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),
+        Row(timestamp=datetime(2023, 10, 17, 17, 51), date_id=6, year=2023, unix_timestamp=1697536260, quarter=4, quarter_name="Q4", month=10, month_name="Oct", year_month=202310, year_month_start=datetime(2023, 10, 1, 0, 0), year_week=202342, week_start=date(2023, 10, 16), week_day_name="Tue", week_day_type="weekday", timezone="PST", time_of_day="Afternoon"),
     ]
     assert dim_date_df.count() == 6
     assert dim_date_df.collect() == expected_dim_date
@@ -426,14 +461,7 @@ def test_fact_orders_creation(spark_fixture: SparkSession, dim_date_df_fixture: 
         dim_date_df=dim_date_df_fixture
     )
 
-    expected_fact_orders = [
-        Row(order_id="136cce7faa42fdb2cefd53fdc79a6098", order_item_id=1, product_id="a1804276d9941ac0733cfd409f5206eb", seller_id="dc8798cbf453b7e0f98745e396cc5616", customer_id="ed0271e0b7da060a393796590e7b737a", order_status_id=2, shipping_limit_date_id=694989, order_purchase_timestamp_id=0, order_approved_at_id=176589, order_delivered_carrier_date_id=2288272, order_delivered_customer_date_id=2374672, order_estimated_delivery_date_id=2374672, price=49.9, freight_value=16.05),  # noqa
-        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=4, product_id="601a360bd2a916ecef0e88de72a6531a", seller_id="7a67c85e85bb2ce8582c35f2203ad736", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=129.99, freight_value=42.16),  # noqa
-        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=3, product_id="b75ad41bddb7dc94c7e555d9f78f5e8a", seller_id="1dfe5347016252a7884b694d4f10f5c4", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=61.0, freight_value=21.08),  # noqa
-        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=2, product_id="5c818ca21204caf8ce1599617751ff49", seller_id="54965bbe3e4f07ae045b90b0b8541f52", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=160.0, freight_value=21.08),  # noqa
-        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", order_item_id=1, product_id="6f59fe49d85eb1353b826d6b5a55e753", seller_id="977f9f63dd360c2a32ece2f93ad6d306", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, shipping_limit_date_id=51540047988, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, price=90.9, freight_value=21.08),  # noqa
-        Row(order_id="ee64d42b8cf066f35eac1cf57de1aa85", order_item_id=1, product_id="c50ca07e9e4db9ea5011f06802c0aea0", seller_id="e9779976487b77c6d4ac45f75ec7afe9", customer_id="caded193e8e47b8362864762a83db3c5", order_status_id=1, shipping_limit_date_id=94491186634, order_purchase_timestamp_id=94490453089, order_approved_at_id=94490495479, order_delivered_carrier_date_id=94490531521, order_delivered_customer_date_id=94490531521, order_estimated_delivery_date_id=94492466401, price=14.49, freight_value=7.87)  # noqa
-    ]
+    expected_fact_orders = [Row(order_id='136cce7faa42fdb2cefd53fdc79a6098', order_item_id=1, product_id='a1804276d9941ac0733cfd409f5206eb', seller_id='dc8798cbf453b7e0f98745e396cc5616', customer_id='ed0271e0b7da060a393796590e7b737a', order_status_id=2, shipping_limit_date_id=3, order_purchase_timestamp_id=1, order_approved_at_id=2, order_delivered_carrier_date_id=4, order_delivered_customer_date_id=5, order_estimated_delivery_date_id=5, price=49.9, freight_value=16.05), Row(order_id='8c2b13adf3f377c8f2b06b04321b0925', order_item_id=4, product_id='601a360bd2a916ecef0e88de72a6531a', seller_id='7a67c85e85bb2ce8582c35f2203ad736', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, shipping_limit_date_id=11, order_purchase_timestamp_id=8, order_approved_at_id=9, order_delivered_carrier_date_id=10, order_delivered_customer_date_id=12, order_estimated_delivery_date_id=15, price=129.99, freight_value=42.16), Row(order_id='8c2b13adf3f377c8f2b06b04321b0925', order_item_id=3, product_id='b75ad41bddb7dc94c7e555d9f78f5e8a', seller_id='1dfe5347016252a7884b694d4f10f5c4', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, shipping_limit_date_id=11, order_purchase_timestamp_id=8, order_approved_at_id=9, order_delivered_carrier_date_id=10, order_delivered_customer_date_id=12, order_estimated_delivery_date_id=15, price=61.0, freight_value=21.08), Row(order_id='8c2b13adf3f377c8f2b06b04321b0925', order_item_id=2, product_id='5c818ca21204caf8ce1599617751ff49', seller_id='54965bbe3e4f07ae045b90b0b8541f52', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, shipping_limit_date_id=11, order_purchase_timestamp_id=8, order_approved_at_id=9, order_delivered_carrier_date_id=10, order_delivered_customer_date_id=12, order_estimated_delivery_date_id=15, price=160.0, freight_value=21.08), Row(order_id='8c2b13adf3f377c8f2b06b04321b0925', order_item_id=1, product_id='6f59fe49d85eb1353b826d6b5a55e753', seller_id='977f9f63dd360c2a32ece2f93ad6d306', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, shipping_limit_date_id=11, order_purchase_timestamp_id=8, order_approved_at_id=9, order_delivered_carrier_date_id=10, order_delivered_customer_date_id=12, order_estimated_delivery_date_id=15, price=90.9, freight_value=21.08), Row(order_id='ee64d42b8cf066f35eac1cf57de1aa85', order_item_id=1, product_id='c50ca07e9e4db9ea5011f06802c0aea0', seller_id='e9779976487b77c6d4ac45f75ec7afe9', customer_id='caded193e8e47b8362864762a83db3c5', order_status_id=1, shipping_limit_date_id=26, order_purchase_timestamp_id=23, order_approved_at_id=24, order_delivered_carrier_date_id=25, order_delivered_customer_date_id=25, order_estimated_delivery_date_id=27, price=14.49, freight_value=7.87)]
 
     assert fact_orders_df.count() == 6
     assert fact_orders_df.collect() == expected_fact_orders
@@ -529,14 +557,9 @@ def test_fact_payments_creation(spark_fixture: SparkSession, dim_date_df_fixture
     fact_payments_df = create_fact_payments_df(
         spark=spark_fixture, payments_df=payments_df, orders_df=orders_df, dim_date_df=dim_date_df_fixture, dim_order_status_df=dim_order_status_df
     )
-    expected_fact_payments = [
-        Row(order_id="136cce7faa42fdb2cefd53fdc79a6098", customer_id="ed0271e0b7da060a393796590e7b737a", order_status_id=2, order_purchase_timestamp_id=0, order_approved_at_id=176589, order_delivered_carrier_date_id=2288272, order_delivered_customer_date_id=2374672, order_estimated_delivery_date_id=2374672, payment_sequential=1, payment_type="credit_card", payment_installments=1, payment_value=65.95),  # noqa
-        Row(order_id="8c2b13adf3f377c8f2b06b04321b0925", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, order_purchase_timestamp_id=42952778153, order_approved_at_id=42952784448, order_delivered_carrier_date_id=51539847912, order_delivered_customer_date_id=51540565313, order_estimated_delivery_date_id=51542306888, payment_sequential=1, payment_type="credit_card", payment_installments=5, payment_value=547.29),  # noqa
-        Row(order_id="ac3b0c224349e4ca9a0b0f2e8fbc4c75", customer_id="f444bb4bffe058f24c3b5b5a0c0f46b6", order_status_id=3, order_purchase_timestamp_id=85902019726, order_approved_at_id=85902020209, order_delivered_carrier_date_id=85902053798, order_delivered_customer_date_id=85902143312, order_estimated_delivery_date_id=94489788001, payment_sequential=1, payment_type="credit_card", payment_installments=1, payment_value=2.29),  # noqa
-        Row(order_id="ac3b0c224349e4ca9a0b0f2e8fbc4c75", customer_id="f444bb4bffe058f24c3b5b5a0c0f46b6", order_status_id=3, order_purchase_timestamp_id=85902019726, order_approved_at_id=85902020209, order_delivered_carrier_date_id=85902053798, order_delivered_customer_date_id=85902143312, order_estimated_delivery_date_id=94489788001, payment_sequential=2, payment_type="voucher", payment_installments=1, payment_value=20.0),  # noqa
-        Row(order_id="ac3b0c224349e4ca9a0b0f2e8fbc4c75", customer_id="f444bb4bffe058f24c3b5b5a0c0f46b6", order_status_id=3, order_purchase_timestamp_id=85902019726, order_approved_at_id=85902020209, order_delivered_carrier_date_id=85902053798, order_delivered_customer_date_id=85902143312, order_estimated_delivery_date_id=94489788001, payment_sequential=3, payment_type="voucher", payment_installments=1, payment_value=20.0)  # noqa
-    ]
+    expected_fact_payments = [Row(order_id='8c2b13adf3f377c8f2b06b04321b0925', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, order_purchase_timestamp_id=8, order_approved_at_id=9, order_delivered_carrier_date_id=10, order_delivered_customer_date_id=12, order_estimated_delivery_date_id=15, payment_sequential=1, payment_type='credit_card', payment_installments=5, payment_value=547.29), Row(order_id='136cce7faa42fdb2cefd53fdc79a6098', customer_id='ed0271e0b7da060a393796590e7b737a', order_status_id=2, order_purchase_timestamp_id=1, order_approved_at_id=2, order_delivered_carrier_date_id=4, order_delivered_customer_date_id=5, order_estimated_delivery_date_id=5, payment_sequential=1, payment_type='credit_card', payment_installments=1, payment_value=65.95), Row(order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, order_purchase_timestamp_id=16, order_approved_at_id=17, order_delivered_carrier_date_id=18, order_delivered_customer_date_id=19, order_estimated_delivery_date_id=22, payment_sequential=1, payment_type='credit_card', payment_installments=1, payment_value=2.29), Row(order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, order_purchase_timestamp_id=16, order_approved_at_id=17, order_delivered_carrier_date_id=18, order_delivered_customer_date_id=19, order_estimated_delivery_date_id=22, payment_sequential=2, payment_type='voucher', payment_installments=1, payment_value=20.0), Row(order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, order_purchase_timestamp_id=16, order_approved_at_id=17, order_delivered_carrier_date_id=18, order_delivered_customer_date_id=19, order_estimated_delivery_date_id=22, payment_sequential=3, payment_type='voucher', payment_installments=1, payment_value=20.0)]
 
+    assert fact_payments_df.count() == 5
     assert fact_payments_df.collect() == expected_fact_payments
 
 
@@ -622,11 +645,7 @@ def test_fact_reviews_creation(spark_fixture: SparkSession, dim_date_df_fixture:
     fact_reviews_df = create_fact_reviews_df(
         reviews_df=reviews_df, dim_date_df=dim_date_df_fixture, orders_df=orders_df, dim_order_status_df=dim_order_status_df
     )
-    expected_fact_reviews = [
-        Row(review_id="148168e0fafc52f1f67e8e9abccacf49", order_id="ac3b0c224349e4ca9a0b0f2e8fbc4c75", customer_id="f444bb4bffe058f24c3b5b5a0c0f46b6", order_status_id=3, review_creation_date_id=85902175298, review_answer_timestamp_id=85902419032, review_score=4, review_comment_title="", review_comment_message=""),
-        Row(review_id="e07549ef5311abcc92ba1784b093fb56", order_id="136cce7faa42fdb2cefd53fdc79a6098", customer_id="ed0271e0b7da060a393796590e7b737a", order_status_id=2, review_creation_date_id=2720272, review_answer_timestamp_id=2793814, review_score=2, review_comment_title="", review_comment_message="fiquei triste por n ter me atendido."),
-        Row(review_id="7c92e0cf5216a579027044df83dccb6f", order_id="8c2b13adf3f377c8f2b06b04321b0925", customer_id="0aad2e31b3c119c26acb8a47768cd00a", order_status_id=3, review_creation_date_id=51540578888, review_answer_timestamp_id=51540992595, review_score=1, review_comment_title="", review_comment_message="Não recebi meus produtos ")
-    ]
+    expected_fact_reviews = [Row(review_id='e07549ef5311abcc92ba1784b093fb56', order_id='136cce7faa42fdb2cefd53fdc79a6098', customer_id='ed0271e0b7da060a393796590e7b737a', order_status_id=2, review_creation_date_id=6, review_answer_timestamp_id=7, review_score=2, review_comment_title='', review_comment_message='fiquei triste por n ter me atendido.'), Row(review_id='148168e0fafc52f1f67e8e9abccacf49', order_id='ac3b0c224349e4ca9a0b0f2e8fbc4c75', customer_id='f444bb4bffe058f24c3b5b5a0c0f46b6', order_status_id=3, review_creation_date_id=20, review_answer_timestamp_id=21, review_score=4, review_comment_title='', review_comment_message=''), Row(review_id='7c92e0cf5216a579027044df83dccb6f', order_id='8c2b13adf3f377c8f2b06b04321b0925', customer_id='0aad2e31b3c119c26acb8a47768cd00a', order_status_id=3, review_creation_date_id=13, review_answer_timestamp_id=14, review_score=1, review_comment_title='', review_comment_message='Não recebi meus produtos ')]
 
     assert fact_reviews_df.count() == 3
     assert fact_reviews_df.collect() == expected_fact_reviews

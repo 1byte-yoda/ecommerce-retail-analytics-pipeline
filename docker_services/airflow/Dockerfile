@@ -1,4 +1,4 @@
-FROM apache/airflow:slim-latest-python3.10
+FROM apache/airflow:slim-latest-python3.9
 USER root
 
 RUN apt-get update \

@@ -1,6 +1,6 @@
 from pyspark.sql import DataFrame, SparkSession, Window
 import pyspark.sql.functions as F
-from pyspark.sql.types import IntegerType, StringType
+from pyspark.sql.types import IntegerType, StringType, TimestampType
 
 
 def create_dim_date_df(date_df: DataFrame) -> DataFrame:
@@ -13,7 +13,9 @@ def create_dim_date_df(date_df: DataFrame) -> DataFrame:
         .withColumn("month", F.date_format(F.col("timestamp"), "M").cast(IntegerType())) \
         .withColumn("month_name", F.date_format(F.col("timestamp"), "MMM")) \
         .withColumn("year_month", F.date_format(F.col("timestamp"), "yyyyMM").cast(IntegerType())) \
+        .withColumn("year_month_start", F.date_format(F.col("timestamp"), "yyyy-MM-01").cast(TimestampType())) \
         .withColumn("year_week", F.concat(F.date_format(F.col("timestamp"), "yyyy"), F.weekofyear(F.col("timestamp"))).cast(IntegerType())) \
+        .withColumn("week_start", F.date_sub(F.next_day(F.col("timestamp"), "SUN"), 6)) \
         .withColumn("week_day_name", F.date_format(F.col("timestamp"), "EEE")) \
         .withColumn("week_day_type", udf_get_week_day_type(F.date_format(F.col("timestamp"), "EEE"))) \
         .withColumn("timezone", F.date_format(F.col("timestamp"), "zzz")) \

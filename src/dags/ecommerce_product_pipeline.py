@@ -43,7 +43,7 @@ create_dim_customers_job = SparkSubmitOperator(
     conn_id="spark",
     verbose=False,
     num_executors=1,
-    executor_cores=1,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="500m",
     jars=get_jars(),
@@ -58,7 +58,7 @@ create_dim_sellers_job = SparkSubmitOperator(
     conn_id="spark",
     verbose=False,
     num_executors=1,
-    executor_cores=1,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="500m",
     jars=get_jars(),
@@ -73,7 +73,7 @@ create_dim_product_category_job = SparkSubmitOperator(
     conn_id="spark",
     verbose=False,
     num_executors=1,
-    executor_cores=1,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="500m",
     jars=get_jars(),
@@ -88,7 +88,7 @@ create_dim_order_status_job = SparkSubmitOperator(
     conn_id="spark",
     verbose=False,
     num_executors=1,
-    executor_cores=1,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="500m",
     jars=get_jars(),
@@ -102,8 +102,8 @@ create_dim_date_job = SparkSubmitOperator(
     name=f"{spark_app_name}_create_dim_date_job",
     conn_id="spark",
     verbose=False,
-    num_executors=4,
-    executor_cores=1,
+    num_executors=2,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="1G",
     jars=get_jars(),
@@ -117,8 +117,8 @@ create_fact_payments_job = SparkSubmitOperator(
     name=f"{spark_app_name}_create_fact_payments_job",
     conn_id="spark",
     verbose=False,
-    num_executors=4,
-    executor_cores=1,
+    num_executors=2,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="1G",
     jars=get_jars(),
@@ -132,8 +132,8 @@ create_fact_reviews_job = SparkSubmitOperator(
     name=f"{spark_app_name}_create_fact_reviews_job",
     conn_id="spark",
     verbose=False,
-    num_executors=4,
-    executor_cores=1,
+    num_executors=2,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="1G",
     jars=get_jars(),
@@ -147,8 +147,8 @@ create_fact_orders_job = SparkSubmitOperator(
     name=f"{spark_app_name}_create_fact_orders_job",
     conn_id="spark",
     verbose=False,
-    num_executors=4,
-    executor_cores=1,
+    num_executors=2,
+    executor_cores=2,
     driver_memory="500m",
     executor_memory="1G",
     jars=get_jars(),
@@ -162,13 +162,12 @@ create_order_performance_report_job = SparkSubmitOperator(
     name=f"{spark_app_name}_create_order_performance_report_job",
     conn_id="spark",
     verbose=False,
-    num_executors=4,
+    num_executors=1,
     executor_cores=1,
     driver_memory="500m",
-    executor_memory="1G",
+    executor_memory="500m",
     jars=get_jars(),
     dag=dag,
-    application_args=["order_performance_report"]
 )
 
 create_order_payment_channel_report_job = SparkSubmitOperator(
@@ -177,21 +176,35 @@ create_order_payment_channel_report_job = SparkSubmitOperator(
     name=f"{spark_app_name}_create_order_payment_channel_report_job",
     conn_id="spark",
     verbose=False,
-    num_executors=4,
+    num_executors=1,
     executor_cores=1,
     driver_memory="500m",
-    executor_memory="1G",
+    executor_memory="500m",
     jars=get_jars(),
     dag=dag,
-    application_args=["order_payment_channel_report"]
 )
+
+silver_layer_dim_tables = [
+    create_dim_customers_job,
+    create_dim_sellers_job,
+    create_dim_product_category_job,
+    create_dim_order_status_job,
+    create_dim_date_job
+]
+
+silver_layer_fact_tables = [
+    create_fact_payments_job,
+    create_fact_reviews_job,
+    create_fact_orders_job
+]
+
+silver_bridge = DummyOperator(task_id="silver_bridge", dag=dag)
 
 gold_layer_tables = [
     create_order_performance_report_job,
     create_order_payment_channel_report_job
 ]
 
+gold_bridge = DummyOperator(task_id="gold_bridge", dag=dag)
 
-bronze_layer_stage >> create_dim_customers_job >> create_dim_sellers_job >> create_dim_date_job >> create_dim_product_category_job  # noqa
-create_dim_product_category_job >> create_dim_order_status_job >> create_fact_payments_job  # noqa
-create_fact_payments_job >> create_fact_reviews_job >> create_fact_orders_job >> gold_layer_tables  # noqa
+bronze_layer_stage >> silver_layer_dim_tables >> silver_bridge >> silver_layer_fact_tables >> gold_bridge >> gold_layer_tables  # noqa

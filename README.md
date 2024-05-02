@@ -9,11 +9,8 @@
 - Apache Superset - for data visualization
 - Minio - for data lake
 
-## Olist Transactional Data Model
-![olist_erd.png](images/olist_erd.png)
-
 ## Data Modeling (Star Schema)
-![erd](images/olist_star_erd.png)
+![erd](images/erd.png)
 
 ## Airflow DAG
 ![dag](images/dag.png)

@@ -1,7 +1,7 @@
 .PHONY: down jars_dl up
 
 jars_dl:
-	bash docker_services/airflow/download_jar_files.sh
+	powershell -ExecutionPolicy Bypass -File docker_services/airflow/download_jar_files.ps1
 
 superset_init_db:
 	docker exec -it superset_app bash /app/docker/docker-init.sh
@@ -18,19 +18,20 @@ trino_init_schemas:
 	docker exec -t trino trino --file /etc/scripts/init.sql
 
 init_medal_buckets:
-	bash docker_services/minio/init.sh
+	mkdir -p docker_services/minio/data1/bronze
+	mkdir -p docker_services/minio/data1/silver
+	mkdir -p docker_services/minio/data1/gold
 
 configure_jupyter:
 	mkdir -p src/jupyter/.jupyter/ && cp docker_services/jupyter/jupyter_notebook_config.py src/jupyter/.jupyter/jupyter_notebook_config.py
 
 up:
-	docker-compose up -d
+	docker-compose up -d --build
 
 down:
 	docker-compose down -v
 
 all:
-	make jars_dl
 	make init_medal_buckets
 	make configure_jupyter
 	make up

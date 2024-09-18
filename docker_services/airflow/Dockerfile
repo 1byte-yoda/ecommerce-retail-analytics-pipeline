@@ -1,12 +1,11 @@
-FROM apache/airflow:slim-latest-python3.9
+FROM apache/airflow:slim-latest-python3.11
 USER root
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-         openjdk-11-jre-headless \
-  && apt-get autoremove -yqq --purge \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+RUN echo "deb http://deb.debian.org/debian/ bullseye main" > /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y openjdk-11-jre-headless \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # For ps command not found
 RUN apt-get update && apt-get install -y procps && rm -rf /var/lib/apt/lists/*
